@@ -1,0 +1,172 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  .sidebar-link {
+    @apply flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors;
+  }
+  .sidebar-link:hover {
+    background-color: hsl(var(--accent));
+  }
+  .sidebar-link.active {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    font-weight: 500;
+  }
+  .card {
+    @apply rounded-lg border shadow-sm;
+    background-color: hsl(var(--card));
+    color: hsl(var(--card-foreground));
+    border-color: hsl(var(--border));
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium;
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+  .btn-primary:hover {
+    opacity: 0.9;
+  }
+  .btn-primary:disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium;
+    background-color: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+  .btn-secondary:hover {
+    opacity: 0.8;
+  }
+  .btn-destructive {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium;
+    background-color: hsl(var(--destructive));
+    color: hsl(var(--destructive-foreground));
+  }
+  .btn-destructive:hover {
+    opacity: 0.9;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium;
+    background-color: hsl(var(--background));
+    border: 1px solid hsl(var(--input));
+  }
+  .btn-outline:hover {
+    background-color: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium;
+  }
+  .btn-ghost:hover {
+    background-color: hsl(var(--accent));
+  }
+  .input-field {
+    @apply flex h-10 w-full rounded-md border px-3 py-2 text-sm;
+    background-color: hsl(var(--background));
+    border-color: hsl(var(--input));
+  }
+  .input-field:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--ring));
+  }
+  .input-field:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  .input-field::placeholder {
+    color: hsl(var(--muted-foreground));
+  }
+  .label-text {
+    @apply text-sm font-medium leading-none;
+  }
+  .badge {
+    @apply inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold;
+  }
+  .badge-success {
+    @apply badge;
+    border-color: #bbf7d0;
+    background-color: #f0fdf4;
+    color: #15803d;
+  }
+  .badge-warning {
+    @apply badge;
+    border-color: #fef08a;
+    background-color: #fefce8;
+    color: #a16207;
+  }
+  .badge-danger {
+    @apply badge;
+    border-color: #fecaca;
+    background-color: #fef2f2;
+    color: #b91c1c;
+  }
+  .badge-info {
+    @apply badge;
+    border-color: #bfdbfe;
+    background-color: #eff6ff;
+    color: #1d4ed8;
+  }
+  .table-container {
+    @apply w-full overflow-auto rounded-lg border;
+    border-color: hsl(var(--border));
+  }
+  .data-table {
+    @apply w-full text-sm;
+  }
+  .data-table thead {
+    border-bottom: 1px solid hsl(var(--border));
+    background-color: hsl(var(--muted));
+  }
+  .data-table th {
+    @apply h-12 px-4 text-left align-middle font-medium;
+    color: hsl(var(--muted-foreground));
+  }
+  .data-table td {
+    @apply px-4 py-3 align-middle;
+  }
+  .data-table tbody tr {
+    @apply border-b transition-colors;
+    border-color: hsl(var(--border));
+  }
+  .data-table tbody tr:hover {
+    background-color: hsl(var(--muted));
+  }
+}
