@@ -1,5 +1,5 @@
 import { createServerClient } from "@/lib/supabase/server";
-import { NotFoundError, DuplicateError } from "@/lib/errors";
+import { NotFoundError, DuplicateError, AppError } from "@/lib/errors";
 
 export interface GlAccount {
   id: string;
@@ -34,7 +34,7 @@ export class GlAccountsService {
     }
 
     const { data, error } = await query;
-    if (error) throw new Error(`Failed to fetch GL accounts: ${error.message}`);
+    if (error) throw new AppError(`Failed to fetch GL accounts: ${error.message}`, "GL_ACCOUNTS_ERROR");
     return (data as GlAccount[]) ?? [];
   }
 
@@ -65,7 +65,7 @@ export class GlAccountsService {
       .single();
     if (error) {
       if (error.code === "23505") throw new DuplicateError("code", formData.code);
-      throw new Error(`Failed to create GL account: ${error.message}`);
+      throw new AppError(`Failed to create GL account: ${error.message}`, "GL_ACCOUNTS_ERROR");
     }
     return data as GlAccount;
   }
@@ -97,7 +97,7 @@ export class GlAccountsService {
       .single();
     if (error) {
       if (error.code === "23505") throw new DuplicateError("code", formData.code ?? "");
-      throw new Error(`Failed to update GL account: ${error.message}`);
+      throw new AppError(`Failed to update GL account: ${error.message}`, "GL_ACCOUNTS_ERROR");
     }
     return data as GlAccount;
   }
@@ -112,7 +112,7 @@ export class GlAccountsService {
     if (!existing) throw new NotFoundError("GL Account", id);
 
     const { error } = await supabase.from("gl_accounts").delete().eq("id", id);
-    if (error) throw new Error(`Failed to delete GL account: ${error.message}`);
+    if (error) throw new AppError(`Failed to delete GL account: ${error.message}`, "GL_ACCOUNTS_ERROR");
   }
 }
 

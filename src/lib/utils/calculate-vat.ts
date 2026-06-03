@@ -47,6 +47,51 @@ export interface VoucherTotals {
   totalAmount: number;
 }
 
+export interface VatTotals {
+  totalNoVat: number;
+  totalVat: number;
+  totalApTrade: number;
+}
+
+export function calculateItemsVat(
+  items: Array<{ drAmount?: number; crAmount?: number }>,
+  vatType: VatMode | string,
+  whtAmountOverride?: number
+): VatTotals {
+  let totalNoVat = 0;
+  let totalVat = 0;
+
+  for (const item of items) {
+    const amount = item.drAmount || item.crAmount || 0;
+    let result: VatCalculationResult;
+    switch (vatType) {
+      case "inclusive":
+        result = calculateVatInclusive(amount);
+        break;
+      case "exclusive":
+        result = calculateVatExclusive(amount);
+        break;
+      case "exempt":
+        result = calculateNoVat(amount);
+        break;
+      default:
+        result = calculateNoVat(amount);
+        break;
+    }
+    totalNoVat += result.baseAmount;
+    totalVat += result.vatAmount;
+  }
+
+  const whtAmount = whtAmountOverride ?? 0;
+  const totalApTrade = totalNoVat + totalVat - whtAmount;
+
+  return {
+    totalNoVat: Math.round(totalNoVat * 100) / 100,
+    totalVat: Math.round(totalVat * 100) / 100,
+    totalApTrade: Math.round(totalApTrade * 100) / 100,
+  };
+}
+
 export function calculateVoucherTotals(items: VoucherLineItem[]): VoucherTotals {
   let baseAmount = 0;
   let vatAmount = 0;

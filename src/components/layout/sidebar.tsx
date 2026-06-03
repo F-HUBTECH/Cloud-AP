@@ -18,7 +18,6 @@ import {
   Landmark,
   ClipboardCheck,
   Banknote,
-  FileSpreadsheet,
   Receipt,
 } from "lucide-react";
 

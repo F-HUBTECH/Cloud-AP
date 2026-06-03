@@ -1,5 +1,5 @@
 import { createServerClient } from "@/lib/supabase/server";
-import { formatCurrency, formatDate } from "@/lib/utils/format";
+import { formatCurrency } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
 import { Plus, Search, Filter } from "lucide-react";
 import Link from "next/link";

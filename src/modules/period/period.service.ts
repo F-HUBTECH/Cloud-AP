@@ -27,7 +27,7 @@ export class PeriodService {
       .single();
 
     if (periodError || !period) throw new NotFoundError("Period", periodId);
-    if (period.closed) throw new Error("Period is already closed");
+    if (period.closed) throw new AppError("Period is already closed", "PERIOD_ERROR");
 
     const periodYear = String(period.period_year);
     const periodMonth = String(period.period_month).padStart(2, "0");
@@ -46,7 +46,7 @@ export class PeriodService {
       .select("id, code, total_amount, total_payment, open_amount")
       .eq("is_active", true);
 
-    if (vendorsError) throw new Error(`Failed to fetch vendors: ${vendorsError.message}`);
+    if (vendorsError) throw new AppError(`Failed to fetch vendors: ${vendorsError.message}`, "PERIOD_ERROR");
 
     let balancesCreated = 0;
 
@@ -86,7 +86,7 @@ export class PeriodService {
       })
       .eq("id", periodId);
 
-    if (closeError) throw new Error(`Failed to close period: ${closeError.message}`);
+    if (closeError) throw new AppError(`Failed to close period: ${closeError.message}`, "PERIOD_ERROR");
 
     await logAudit({
       tableName: "periods",
@@ -115,8 +115,8 @@ export class PeriodService {
       .eq("period_year", year)
       .eq("closed", false);
 
-    if (periodsError) throw new Error(`Failed to fetch periods: ${periodsError.message}`);
-    if (!periods || periods.length === 0) throw new Error(`No open periods found for year ${year}`);
+    if (periodsError) throw new AppError(`Failed to fetch periods: ${periodsError.message}`, "PERIOD_ERROR");
+    if (!periods || periods.length === 0) throw new AppError(`No open periods found for year ${year}`, "PERIOD_ERROR");
 
     let periodCount = 0;
     for (const period of periods) {
@@ -178,14 +178,14 @@ export class PeriodService {
       .maybeSingle();
 
     if (!period) throw new NotFoundError("Period", periodId);
-    if (!period.closed) throw new Error("Period is already open");
+    if (!period.closed) throw new AppError("Period is already open", "PERIOD_ERROR");
 
     const { error } = await supabase
       .from("periods")
       .update({ closed: false, closed_at: null, closed_by: null })
       .eq("id", periodId);
 
-    if (error) throw new Error(`Failed to reopen period: ${error.message}`);
+    if (error) throw new AppError(`Failed to reopen period: ${error.message}`, "PERIOD_ERROR");
 
     await logAudit({
       tableName: "periods",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2, Save } from "lucide-react";
 import { updateConfig } from "@/modules/settings/settings.actions";
@@ -157,7 +157,7 @@ export default function CompanySettingsPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("company");
 
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const fetchConfig = useCallback(async () => {
     setLoading(true);
@@ -179,7 +179,7 @@ export default function CompanySettingsPage() {
       setForm(data as ConfigFormData);
     }
     setLoading(false);
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
     fetchConfig();

@@ -37,6 +37,10 @@ export function formatDateThai(date: string | Date): string {
   return `${day} ${month} ${buddhistYear}`;
 }
 
+export function roundAmount(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
 export function parseNumber(value: string): number {
   if (!value || value.trim() === "") return 0;
   const cleaned = value.replace(/,/g, "").replace(/\s/g, "");

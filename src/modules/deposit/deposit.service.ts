@@ -1,8 +1,10 @@
 import { createServerClient } from "@/lib/supabase/server";
 import { NotFoundError, AppError, PeriodClosedError } from "@/lib/errors";
 import { DEFAULT_PAGE_SIZE, MODULE_CODES } from "@/lib/constants";
-import { canCreate, canRead, canUpdate, canDelete } from "@/lib/utils/permissions";
+import { canCreate, canUpdate, canDelete } from "@/lib/utils/permissions";
 import { glPostingService } from "@/modules/gl-posting/gl-posting.service";
+import { getGLTradeAccount } from "@/lib/utils/gl-helpers";
+import { recalcVendorBalance } from "@/lib/utils/vendor-helpers";
 import { logAudit } from "@/lib/utils/audit";
 import type { DepositPayment, DepositPaymentItem, DepositFormData, DepositWithVendor, DepositListParams, DepositListResult } from "./deposit.types";
 
@@ -157,11 +159,7 @@ class DepositService {
     await this.recalcVendorBalance(formData.supplierCode);
 
     try {
-      const { data: tradeAccount } = await (await this.getClient())
-        .from("config")
-        .select("acc_trade")
-        .single();
-      const tradeGl = (tradeAccount as Record<string, unknown>)?.acc_trade as string ?? "2000";
+      const tradeGl = await getGLTradeAccount(await this.getClient());
 
       const periodMonth = formData.depositDate?.slice(5, 7) ?? "";
       const periodYear = formData.depositDate?.slice(0, 4) ?? "";
@@ -424,13 +422,7 @@ class DepositService {
   }
 
   private async recalcVendorBalance(supplierCode: string): Promise<void> {
-    const supabase = await this.getClient();
-    const { error } = await supabase.rpc("recalculate_vendor_balance", {
-      p_vendor_code: supplierCode,
-    });
-    if (error) {
-      console.error("Failed to recalculate vendor balance:", error.message);
-    }
+    return recalcVendorBalance(await this.getClient(), supplierCode);
   }
 
   private mapDeposit(row: Record<string, unknown>): DepositPayment {

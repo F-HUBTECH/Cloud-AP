@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils/cn";
 import { formatDate } from "@/lib/utils/format";
@@ -39,7 +39,7 @@ export default function PeriodPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const fetchPeriods = useCallback(async () => {
     setLoading(true);
@@ -55,7 +55,7 @@ export default function PeriodPage() {
       setPeriods((data as Period[]) ?? []);
     }
     setLoading(false);
-  }, [yearFilter]);
+  }, [yearFilter, supabase]);
 
   useEffect(() => {
     fetchPeriods();

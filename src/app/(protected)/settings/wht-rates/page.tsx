@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatNumber } from "@/lib/utils/format";
 import { Plus, Pencil, Trash2, Search, Loader2 } from "lucide-react";
@@ -50,7 +50,7 @@ export default function WhtRatesPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -65,7 +65,7 @@ export default function WhtRatesPage() {
       setItems((data as WhtCode[]) ?? []);
     }
     setLoading(false);
-  }, [search]);
+  }, [search, supabase]);
 
   useEffect(() => { fetchItems(); }, [fetchItems]);
 

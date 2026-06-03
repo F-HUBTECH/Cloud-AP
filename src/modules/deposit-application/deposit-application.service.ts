@@ -27,7 +27,6 @@ class DepositApplicationService {
     const {
       page = 1,
       pageSize = DEFAULT_PAGE_SIZE,
-      supplierCode,
       status,
       dateFrom,
       dateTo,
@@ -364,7 +363,7 @@ class DepositApplicationService {
         .update({
           applied_amount: newApplied,
           remaining_amount: Math.max(newRemaining, 0),
-          status: newApplied <= 0.01 ? "active" : "active",
+          status: newApplied <= 0.01 ? "active" : "applied",
         })
         .eq("id", depositId);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { closeYear } from "@/modules/period/period.actions";
 import { formatCurrency } from "@/lib/utils/format";
@@ -40,7 +40,7 @@ export default function YearEndPage() {
   const [closeDialog, setCloseDialog] = useState(false);
   const [yearFilter, setYearFilter] = useState(new Date().getFullYear());
 
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const yearOptions = [yearFilter - 1, yearFilter, yearFilter + 1];
 
   const fetchData = useCallback(async () => {
@@ -76,12 +76,12 @@ export default function YearEndPage() {
       );
     }
     setLoading(false);
-  }, [yearFilter]);
+  }, [yearFilter, supabase]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const allClosed = periods.length > 0 && periods.every((p) => p.closed);
-  const anyClosed = periods.some((p) => p.closed);
+
   const openCount = periods.filter((p) => !p.closed).length;
   const totalPayable = vendorBalances.reduce((s, v) => s + v.total_amount, 0);
   const totalPayments = vendorBalances.reduce((s, v) => s + v.total_payment, 0);

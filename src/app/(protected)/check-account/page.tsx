@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatCurrency } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
@@ -44,7 +44,7 @@ export default function CheckAccountPage() {
   const [hasRun, setHasRun] = useState(false);
   const [periods, setPeriods] = useState<Period[]>([]);
 
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     supabase
@@ -56,7 +56,7 @@ export default function CheckAccountPage() {
       .then(({ data }) => {
         if (data) setPeriods(data as Period[]);
       });
-  }, []);
+  }, [supabase]);
 
   const runCheck = useCallback(async () => {
     setIsLoading(true);

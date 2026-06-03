@@ -1,7 +1,7 @@
 import { createServerClient } from "@/lib/supabase/server";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
-import { ArrowLeft, Edit2, FileText } from "lucide-react";
+import { ArrowLeft, FileText } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 

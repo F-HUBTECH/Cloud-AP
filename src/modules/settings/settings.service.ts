@@ -1,6 +1,5 @@
 import { createServerClient } from "@/lib/supabase/server";
-import { NotFoundError, DuplicateError } from "@/lib/errors";
-import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
+import { NotFoundError, DuplicateError, AppError } from "@/lib/errors";
 
 export interface ApType {
   id: string;
@@ -120,7 +119,7 @@ export class SettingsService {
     }
 
     const { data, error } = await query;
-    if (error) throw new Error(`Failed to fetch AP types: ${error.message}`);
+    if (error) throw new AppError(`Failed to fetch AP types: ${error.message}`, "SETTINGS_ERROR");
     return (data as ApType[]) ?? [];
   }
 
@@ -151,7 +150,7 @@ export class SettingsService {
       .single();
     if (error) {
       if (error.code === "23505") throw new DuplicateError("code", formData.code);
-      throw new Error(`Failed to create AP type: ${error.message}`);
+      throw new AppError(`Failed to create AP type: ${error.message}`, "SETTINGS_ERROR");
     }
     return data as ApType;
   }
@@ -183,7 +182,7 @@ export class SettingsService {
       .single();
     if (error) {
       if (error.code === "23505") throw new DuplicateError("code", formData.code ?? "");
-      throw new Error(`Failed to update AP type: ${error.message}`);
+      throw new AppError(`Failed to update AP type: ${error.message}`, "SETTINGS_ERROR");
     }
     return data as ApType;
   }
@@ -198,7 +197,7 @@ export class SettingsService {
     if (!existing) throw new NotFoundError("AP Type", id);
 
     const { error } = await supabase.from("ap_types").delete().eq("id", id);
-    if (error) throw new Error(`Failed to delete AP type: ${error.message}`);
+    if (error) throw new AppError(`Failed to delete AP type: ${error.message}`, "SETTINGS_ERROR");
   }
 
   async listVatCodes(params?: { search?: string }): Promise<VatCode[]> {
@@ -212,7 +211,7 @@ export class SettingsService {
     }
 
     const { data, error } = await query;
-    if (error) throw new Error(`Failed to fetch VAT codes: ${error.message}`);
+    if (error) throw new AppError(`Failed to fetch VAT codes: ${error.message}`, "SETTINGS_ERROR");
     return (data as VatCode[]) ?? [];
   }
 
@@ -232,7 +231,7 @@ export class SettingsService {
       .single();
     if (error) {
       if (error.code === "23505") throw new DuplicateError("code", formData.code);
-      throw new Error(`Failed to create VAT code: ${error.message}`);
+      throw new AppError(`Failed to create VAT code: ${error.message}`, "SETTINGS_ERROR");
     }
     return data as VatCode;
   }
@@ -264,7 +263,7 @@ export class SettingsService {
       .single();
     if (error) {
       if (error.code === "23505") throw new DuplicateError("code", formData.code ?? "");
-      throw new Error(`Failed to update VAT code: ${error.message}`);
+      throw new AppError(`Failed to update VAT code: ${error.message}`, "SETTINGS_ERROR");
     }
     return data as VatCode;
   }
@@ -279,7 +278,7 @@ export class SettingsService {
     if (!existing) throw new NotFoundError("VAT Code", id);
 
     const { error } = await supabase.from("vat_codes").delete().eq("id", id);
-    if (error) throw new Error(`Failed to delete VAT code: ${error.message}`);
+    if (error) throw new AppError(`Failed to delete VAT code: ${error.message}`, "SETTINGS_ERROR");
   }
 
   async listWhtCodes(params?: { search?: string }): Promise<WhtCode[]> {
@@ -293,7 +292,7 @@ export class SettingsService {
     }
 
     const { data, error } = await query;
-    if (error) throw new Error(`Failed to fetch WHT codes: ${error.message}`);
+    if (error) throw new AppError(`Failed to fetch WHT codes: ${error.message}`, "SETTINGS_ERROR");
     return (data as WhtCode[]) ?? [];
   }
 
@@ -313,7 +312,7 @@ export class SettingsService {
       .single();
     if (error) {
       if (error.code === "23505") throw new DuplicateError("code", formData.code);
-      throw new Error(`Failed to create WHT code: ${error.message}`);
+      throw new AppError(`Failed to create WHT code: ${error.message}`, "SETTINGS_ERROR");
     }
     return data as WhtCode;
   }
@@ -345,7 +344,7 @@ export class SettingsService {
       .single();
     if (error) {
       if (error.code === "23505") throw new DuplicateError("code", formData.code ?? "");
-      throw new Error(`Failed to update WHT code: ${error.message}`);
+      throw new AppError(`Failed to update WHT code: ${error.message}`, "SETTINGS_ERROR");
     }
     return data as WhtCode;
   }
@@ -360,7 +359,7 @@ export class SettingsService {
     if (!existing) throw new NotFoundError("WHT Code", id);
 
     const { error } = await supabase.from("wht_codes").delete().eq("id", id);
-    if (error) throw new Error(`Failed to delete WHT code: ${error.message}`);
+    if (error) throw new AppError(`Failed to delete WHT code: ${error.message}`, "SETTINGS_ERROR");
   }
 
   async listPaymentCodes(params?: { search?: string }): Promise<PaymentCode[]> {
@@ -374,7 +373,7 @@ export class SettingsService {
     }
 
     const { data, error } = await query;
-    if (error) throw new Error(`Failed to fetch payment codes: ${error.message}`);
+    if (error) throw new AppError(`Failed to fetch payment codes: ${error.message}`, "SETTINGS_ERROR");
     return (data as PaymentCode[]) ?? [];
   }
 
@@ -394,7 +393,7 @@ export class SettingsService {
       .single();
     if (error) {
       if (error.code === "23505") throw new DuplicateError("code", formData.code);
-      throw new Error(`Failed to create payment code: ${error.message}`);
+      throw new AppError(`Failed to create payment code: ${error.message}`, "SETTINGS_ERROR");
     }
     return data as PaymentCode;
   }
@@ -426,7 +425,7 @@ export class SettingsService {
       .single();
     if (error) {
       if (error.code === "23505") throw new DuplicateError("code", formData.code ?? "");
-      throw new Error(`Failed to update payment code: ${error.message}`);
+      throw new AppError(`Failed to update payment code: ${error.message}`, "SETTINGS_ERROR");
     }
     return data as PaymentCode;
   }
@@ -441,7 +440,7 @@ export class SettingsService {
     if (!existing) throw new NotFoundError("Payment Code", id);
 
     const { error } = await supabase.from("payment_codes").delete().eq("id", id);
-    if (error) throw new Error(`Failed to delete payment code: ${error.message}`);
+    if (error) throw new AppError(`Failed to delete payment code: ${error.message}`, "SETTINGS_ERROR");
   }
 
   async listPeriods(params?: { year?: number }): Promise<Period[]> {
@@ -453,7 +452,7 @@ export class SettingsService {
     }
 
     const { data, error } = await query;
-    if (error) throw new Error(`Failed to fetch periods: ${error.message}`);
+    if (error) throw new AppError(`Failed to fetch periods: ${error.message}`, "SETTINGS_ERROR");
     return (data as Period[]) ?? [];
   }
 
@@ -472,7 +471,7 @@ export class SettingsService {
       .eq("id", id)
       .select()
       .single();
-    if (error) throw new Error(`Failed to close period: ${error.message}`);
+    if (error) throw new AppError(`Failed to close period: ${error.message}`, "SETTINGS_ERROR");
     return data as Period;
   }
 
@@ -491,7 +490,7 @@ export class SettingsService {
       .eq("id", id)
       .select()
       .single();
-    if (error) throw new Error(`Failed to reopen period: ${error.message}`);
+    if (error) throw new AppError(`Failed to reopen period: ${error.message}`, "SETTINGS_ERROR");
     return data as Period;
   }
 
@@ -510,7 +509,7 @@ export class SettingsService {
     }
 
     const { data, error } = await query;
-    if (error) throw new Error(`Failed to fetch users: ${error.message}`);
+    if (error) throw new AppError(`Failed to fetch users: ${error.message}`, "SETTINGS_ERROR");
     return (data as AppUser[]) ?? [];
   }
 
@@ -541,7 +540,7 @@ export class SettingsService {
       .single();
     if (error) {
       if (error.code === "23505") throw new DuplicateError("login_name", formData.login_name);
-      throw new Error(`Failed to create user: ${error.message}`);
+      throw new AppError(`Failed to create user: ${error.message}`, "SETTINGS_ERROR");
     }
     return data as AppUser;
   }
@@ -573,7 +572,7 @@ export class SettingsService {
       .single();
     if (error) {
       if (error.code === "23505") throw new DuplicateError("login_name", formData.login_name ?? "");
-      throw new Error(`Failed to update user: ${error.message}`);
+      throw new AppError(`Failed to update user: ${error.message}`, "SETTINGS_ERROR");
     }
     return data as AppUser;
   }
@@ -588,7 +587,7 @@ export class SettingsService {
     if (!existing) throw new NotFoundError("User", id);
 
     const { error } = await supabase.from("app_users").delete().eq("id", id);
-    if (error) throw new Error(`Failed to delete user: ${error.message}`);
+    if (error) throw new AppError(`Failed to delete user: ${error.message}`, "SETTINGS_ERROR");
   }
 
   async createGlAccount(formData: { code: string; name: string; level_no?: number; parent_code?: string | null; account_type?: string; is_active?: boolean }): Promise<Record<string, unknown>> {
@@ -599,7 +598,7 @@ export class SettingsService {
     const { data, error } = await supabase.from("gl_accounts").insert(formData).select().single();
     if (error) {
       if (error.code === "23505") throw new DuplicateError("code", formData.code);
-      throw new Error(`Failed to create GL account: ${error.message}`);
+      throw new AppError(`Failed to create GL account: ${error.message}`, "SETTINGS_ERROR");
     }
     return data;
   }
@@ -612,7 +611,7 @@ export class SettingsService {
     const { data, error } = await supabase.from("gl_accounts").update(formData).eq("id", id).select().single();
     if (error) {
       if (error.code === "23505") throw new DuplicateError("code", (formData.code as string) ?? "");
-      throw new Error(`Failed to update GL account: ${error.message}`);
+      throw new AppError(`Failed to update GL account: ${error.message}`, "SETTINGS_ERROR");
     }
     return data;
   }
@@ -622,7 +621,7 @@ export class SettingsService {
     const { data: existing } = await supabase.from("gl_accounts").select("id").eq("id", id).maybeSingle();
     if (!existing) throw new NotFoundError("GL Account", id);
     const { error } = await supabase.from("gl_accounts").delete().eq("id", id);
-    if (error) throw new Error(`Failed to delete GL account: ${error.message}`);
+    if (error) throw new AppError(`Failed to delete GL account: ${error.message}`, "SETTINGS_ERROR");
   }
 
   async updateConfig(formData: Record<string, unknown>): Promise<Record<string, unknown>> {
@@ -631,11 +630,11 @@ export class SettingsService {
 
     if (existing && existing.length > 0) {
       const { data, error } = await supabase.from("config").update(formData).eq("id", existing[0].id).select().single();
-      if (error) throw new Error(`Failed to update config: ${error.message}`);
+      if (error) throw new AppError(`Failed to update config: ${error.message}`, "SETTINGS_ERROR");
       return data;
     } else {
       const { data, error } = await supabase.from("config").insert(formData).select().single();
-      if (error) throw new Error(`Failed to create config: ${error.message}`);
+      if (error) throw new AppError(`Failed to create config: ${error.message}`, "SETTINGS_ERROR");
       return data;
     }
   }

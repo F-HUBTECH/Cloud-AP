@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
-import { cn } from "@/lib/utils/cn";
 import { Loader2 } from "lucide-react";
 
 interface AccountOption {
@@ -49,7 +48,7 @@ export default function DetailLedgerPage() {
 
     const supabase = createClient();
 
-    let query = supabase
+    const query = supabase
       .from("invoice_items")
       .select("id, invoice_id, gl_account, description, dr_amount, cr_amount, invoices(doc_number, doc_date, supplier_code)")
       .eq("gl_account", selectedAccount)

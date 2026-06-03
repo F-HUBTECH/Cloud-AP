@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { createTransfer, cancelTransfer } from "@/modules/transfer/transfer.actions";
 import { cn } from "@/lib/utils/cn";
@@ -62,7 +62,7 @@ export default function TransferListPage() {
     remark: "",
   });
 
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const pageSize = 20;
 
   const fetchTransfers = useCallback(async () => {
@@ -88,7 +88,7 @@ export default function TransferListPage() {
       setTotalPages(Math.ceil((count ?? 0) / pageSize));
     }
     setLoading(false);
-  }, [page, search, statusFilter]);
+  }, [page, search, statusFilter, supabase]);
 
   const fetchVendors = useCallback(async () => {
     const { data } = await supabase
@@ -97,7 +97,7 @@ export default function TransferListPage() {
       .eq("is_active", true)
       .order("code");
     if (data) setVendors(data as VendorOption[]);
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
     fetchTransfers();

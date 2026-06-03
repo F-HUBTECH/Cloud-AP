@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { APP_NAME } from "@/lib/constants";
-import { LogOut, User, ChevronDown } from "lucide-react";
+import { LogOut, ChevronDown } from "lucide-react";
 
 interface UserProfile {
   email: string;
@@ -69,10 +70,12 @@ export function Header() {
           className="flex items-center gap-2 rounded-lg px-3 py-1.5 hover:bg-accent"
         >
           {user?.avatarUrl ? (
-            <img
+            <Image
               src={user.avatarUrl}
               alt={user.fullName}
-              className="h-7 w-7 rounded-full object-cover"
+              width={28}
+              height={28}
+              className="rounded-full object-cover"
             />
           ) : (
             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">

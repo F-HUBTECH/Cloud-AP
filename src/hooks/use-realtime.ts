@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
@@ -18,7 +18,7 @@ export function useRealtimeSubscription<T extends { id: unknown }>(
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const fetchData = useCallback(async () => {
     try {
@@ -43,7 +43,7 @@ export function useRealtimeSubscription<T extends { id: unknown }>(
     } finally {
       setIsLoading(false);
     }
-  }, [table, filter?.column, filter?.value]);
+  }, [table, filter?.column, filter?.value, supabase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     fetchData();
@@ -112,7 +112,7 @@ export function useRealtimeSubscription<T extends { id: unknown }>(
         supabase.removeChannel(channel);
       }
     };
-  }, [table, filter?.column, filter?.value]);
+  }, [table, filter?.column, filter?.value, supabase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { data, isLoading, error };
 }

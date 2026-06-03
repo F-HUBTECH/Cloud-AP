@@ -1,8 +1,9 @@
 import { createServerClient } from "@/lib/supabase/server";
-import { NotFoundError, DuplicateError, PeriodClosedError, AppError } from "@/lib/errors";
+import { NotFoundError, DuplicateError, AppError, AuthorizationError } from "@/lib/errors";
 import { DEFAULT_PAGE_SIZE, MODULE_CODES } from "@/lib/constants";
 import { canCreate, canDelete } from "@/lib/utils/permissions";
 import { glPostingService } from "@/modules/gl-posting/gl-posting.service";
+import { getGLTradeAccount } from "@/lib/utils/gl-helpers";
 import { logAudit } from "@/lib/utils/audit";
 import type {
   Transfer,
@@ -13,6 +14,10 @@ import type {
 } from "./transfer.types";
 
 export class TransferService {
+  private async getClient() {
+    return createServerClient();
+  }
+
   async list(params: TransferListParams = {}): Promise<TransferListResult> {
     const {
       page = 1,
@@ -23,7 +28,7 @@ export class TransferService {
       dateTo,
     } = params;
 
-    const supabase = await createServerClient();
+    const supabase = await this.getClient();
 
     let query = supabase
       .from("transfers")
@@ -51,7 +56,7 @@ export class TransferService {
 
     const { data, count, error } = await query;
 
-    if (error) throw new Error(`Failed to fetch transfers: ${error.message}`);
+    if (error) throw new AppError(`Failed to fetch transfers: ${error.message}`, "TRANSFER_ERROR");
 
     return {
       data: (data as TransferWithVendors[]) ?? [],
@@ -63,7 +68,7 @@ export class TransferService {
   }
 
   async getById(id: string): Promise<TransferWithVendors> {
-    const supabase = await createServerClient();
+    const supabase = await this.getClient();
 
     const { data, error } = await supabase
       .from("transfers")
@@ -81,18 +86,18 @@ export class TransferService {
       throw new AppError("No permission to create transfer", "FORBIDDEN", 403);
     }
 
-    const supabase = await createServerClient();
+    const supabase = await this.getClient();
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Authentication required");
+    if (!user) throw new AuthorizationError("Authentication required");
 
     if (formData.from_vendor_id === formData.to_vendor_id) {
-      throw new Error("Source and destination vendor cannot be the same");
+      throw new AppError("Source and destination vendor cannot be the same", "TRANSFER_ERROR");
     }
 
     const amount = Number(formData.amount);
     if (isNaN(amount) || amount <= 0) {
-      throw new Error("Transfer amount must be greater than zero");
+      throw new AppError("Transfer amount must be greater than zero", "TRANSFER_ERROR");
     }
 
     const fromVendor = await this._getVendorCode(formData.from_vendor_id);
@@ -130,17 +135,13 @@ export class TransferService {
       if (error.code === "23505") {
         throw new DuplicateError("doc_number", docNumber);
       }
-      throw new Error(`Failed to create transfer: ${error.message}`);
+      throw new AppError(`Failed to create transfer: ${error.message}`, "TRANSFER_ERROR");
     }
 
     await this._updateVendorBalances(fromVendor, toVendor);
 
     try {
-      const { data: tradeAccount } = await (await createServerClient())
-        .from("config")
-        .select("acc_trade")
-        .single();
-      const tradeGl = (tradeAccount as Record<string, unknown>)?.acc_trade as string ?? "2000";
+      const tradeGl = await getGLTradeAccount(await this.getClient());
 
       await glPostingService.createJournalEntry({
         sourceType: "transfer",
@@ -176,7 +177,7 @@ export class TransferService {
       throw new AppError("No permission to cancel transfer", "FORBIDDEN", 403);
     }
 
-    const supabase = await createServerClient();
+    const supabase = await this.getClient();
 
     const { data: existing } = await supabase
       .from("transfers")
@@ -186,10 +187,10 @@ export class TransferService {
 
     if (!existing) throw new NotFoundError("Transfer", id);
     if (existing.status === "cancelled") {
-      throw new Error("Transfer is already cancelled");
+      throw new AppError("Transfer is already cancelled", "TRANSFER_ERROR");
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user: _user } } = await supabase.auth.getUser();
 
     const { data, error } = await supabase
       .from("transfers")
@@ -201,7 +202,7 @@ export class TransferService {
       .select()
       .single();
 
-    if (error) throw new Error(`Failed to cancel transfer: ${error.message}`);
+    if (error) throw new AppError(`Failed to cancel transfer: ${error.message}`, "TRANSFER_ERROR");
 
     const fromVendorCode = (existing as Record<string, unknown>).from_vendor_code as string;
     const toVendorCode = (existing as Record<string, unknown>).to_vendor_code as string;
@@ -233,7 +234,7 @@ export class TransferService {
       throw new AppError("No permission to delete transfer", "FORBIDDEN", 403);
     }
 
-    const supabase = await createServerClient();
+    const supabase = await this.getClient();
 
     const { data: existing } = await supabase
       .from("transfers")
@@ -253,7 +254,7 @@ export class TransferService {
 
     const { error } = await supabase.from("transfers").delete().eq("id", id);
 
-    if (error) throw new Error(`Failed to delete transfer: ${error.message}`);
+    if (error) throw new AppError(`Failed to delete transfer: ${error.message}`, "TRANSFER_ERROR");
 
     await logAudit({
       tableName: "transfers",
@@ -265,7 +266,7 @@ export class TransferService {
   }
 
   private async _getVendorCode(vendorId: string): Promise<string> {
-    const supabase = await createServerClient();
+    const supabase = await this.getClient();
     const { data } = await supabase
       .from("vendors")
       .select("code")
@@ -278,7 +279,7 @@ export class TransferService {
     fromVendorCode: string,
     toVendorCode: string,
   ): Promise<void> {
-    const supabase = await createServerClient();
+    const supabase = await this.getClient();
 
     await supabase.rpc("recalculate_vendor_balance", {
       p_vendor_code: fromVendorCode,

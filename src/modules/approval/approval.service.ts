@@ -2,12 +2,11 @@ import { createServerClient } from "@/lib/supabase/server";
 import { NotFoundError, AuthorizationError, AppError } from "@/lib/errors";
 import { APPROVAL_STATUS, MODULE_CODES, DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import type { ApprovalStatus } from "@/lib/constants";
-import { canApprove, canRead } from "@/lib/utils/permissions";
+import { canApprove } from "@/lib/utils/permissions";
 import type {
   Approval,
   ApprovalFormData,
   ApprovalActionData,
-  ApprovalWithDetails,
   PendingApprovalItem,
   ApprovalListParams,
   ApprovalListResult,

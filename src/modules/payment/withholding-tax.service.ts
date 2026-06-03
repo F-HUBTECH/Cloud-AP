@@ -4,8 +4,12 @@ import { calculateWhtAmount } from "@/lib/utils/calculate-wht";
 import type { WithholdingTax, WhtPerSupplier } from "./payment.types";
 
 class WHTService {
+  private async getClient() {
+    return createServerClient();
+  }
+
   async generateWht(paymentId: string): Promise<WithholdingTax[]> {
-    const supabase = await createServerClient();
+    const supabase = await this.getClient();
 
     const { data: payment, error: paymentError } = await supabase
       .from("payments")
@@ -103,7 +107,7 @@ class WHTService {
     whtCode: string,
     baseAmount: number,
   ): Promise<WithholdingTax> {
-    const supabase = await createServerClient();
+    const supabase = await this.getClient();
 
     const { data: payment, error: paymentError } = await supabase
       .from("payments")
@@ -191,7 +195,7 @@ class WHTService {
   }
 
   async cancelWht(paymentId: string, reason: string): Promise<void> {
-    const supabase = await createServerClient();
+    const supabase = await this.getClient();
 
     const { data: whtRecords, error: whtError } = await supabase
       .from("withholding_taxes")
@@ -235,7 +239,7 @@ class WHTService {
   }
 
   async getWhtByPaymentId(paymentId: string): Promise<WithholdingTax[]> {
-    const supabase = await createServerClient();
+    const supabase = await this.getClient();
 
     const { data, error } = await supabase
       .from("withholding_taxes")
@@ -248,7 +252,7 @@ class WHTService {
   }
 
   async printWht50(paymentId: string): Promise<WithholdingTax & Partial<WhtPerSupplier>> {
-    const supabase = await createServerClient();
+    const supabase = await this.getClient();
 
     const { data: whtRecords, error: whtError } = await supabase
       .from("withholding_taxes")
@@ -306,7 +310,7 @@ class WHTService {
     baseAmount: number,
     taxAmount: number,
   ): Promise<void> {
-    const supabase = await createServerClient();
+    const supabase = await this.getClient();
 
     const { data: { user: authUser } } = await supabase.auth.getUser();
     const userId = authUser?.id ?? null;

@@ -1,13 +1,15 @@
 import { createServerClient } from "@/lib/supabase/server";
-import { NotFoundError, PeriodClosedError, DuplicateError, AppError } from "@/lib/errors";
+import { NotFoundError, DuplicateError, AppError } from "@/lib/errors";
 import { VOUCHER_STATUS, MODULE_CODES, DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import type { VoucherStatus, VatMode, TransactionType } from "@/lib/constants";
 import { canCreate, canUpdate, canDelete } from "@/lib/utils/permissions";
-import { calculateVatExclusive, calculateVatInclusive, calculateNoVat } from "@/lib/utils/calculate-vat";
-import { calculateWhtAmount } from "@/lib/utils/calculate-wht";
+import { calculateItemsVat } from "@/lib/utils/calculate-vat";
+import { getGLTradeAccount } from "@/lib/utils/gl-helpers";
+import { validatePeriodOpen } from "@/lib/utils/period-helpers";
+import { recalcVendorBalance } from "@/lib/utils/vendor-helpers";
 import { glPostingService } from "@/modules/gl-posting/gl-posting.service";
 import { logAudit } from "@/lib/utils/audit";
-import type { Invoice, InvoiceItem, InvoiceFormData, InvoiceWithVendor, InvoiceOutstanding, InvoiceListParams, InvoiceListResult, VendorBalanceSummary } from "./posting.types";
+import type { Invoice, InvoiceItem, InvoiceFormData, InvoiceWithVendor, InvoiceOutstanding, InvoiceListParams, InvoiceListResult } from "./posting.types";
 class PostingService {
   private async getClient() {
     return createServerClient();
@@ -177,11 +179,7 @@ class PostingService {
     await this.recalcVendorBalance(formData.supplierCode);
 
     try {
-      const { data: tradeAccount } = await (await this.getClient())
-        .from("config")
-        .select("acc_trade")
-        .single();
-      const tradeGl = (tradeAccount as Record<string, unknown>)?.acc_trade as string ?? "2000";
+      const tradeGl = await getGLTradeAccount(await this.getClient());
 
       await glPostingService.createJournalEntry({
         sourceType: "invoice",
@@ -276,7 +274,7 @@ class PostingService {
     if (formData.items && formData.items.length > 0) {
       await supabase.from("invoice_items").delete().eq("invoice_id", id);
 
-      const supplierId = formData.supplierId ?? existing.supplier_id;
+      const _supplierId = formData.supplierId ?? existing.supplier_id;
 
       const detailRows = formData.items.map((item, index) => ({
         invoice_id: id,
@@ -486,19 +484,7 @@ class PostingService {
   }
 
   private async validatePeriodOpen(periodMonth: string, periodYear: string): Promise<void> {
-    const supabase = await this.getClient();
-
-    const { data: period, error } = await supabase
-      .from("periods")
-      .select("closed")
-      .eq("period_month", periodMonth)
-      .eq("period_year", periodYear)
-      .single();
-
-    if (error) throw new AppError("Failed to validate period");
-    if (period?.closed) {
-      throw new PeriodClosedError(`${periodYear}/${periodMonth}`);
-    }
+    return validatePeriodOpen(await this.getClient(), periodMonth, periodYear);
   }
 
   private async validateDuplicateDocNo(docNo: string): Promise<void> {
@@ -544,47 +530,15 @@ class PostingService {
   }
 
   private calculateTotals(formData: InvoiceFormData): { totalNoVat: number; totalVat: number; totalApTrade: number } {
-    let totalNoVat = 0;
-    let totalVat = 0;
-
-    for (const item of formData.items) {
-      let result;
-      switch (formData.vatType) {
-        case "inclusive":
-          result = calculateVatInclusive(item.debit || item.credit);
-          break;
-        case "exclusive":
-          result = calculateVatExclusive(item.debit || item.credit);
-          break;
-        case "exempt":
-          result = calculateNoVat(item.debit || item.credit);
-          break;
-        default:
-          result = calculateNoVat(item.debit || item.credit);
-          break;
-      }
-      totalNoVat += result.baseAmount;
-      totalVat += result.vatAmount;
-    }
-
-    const whtAmount = formData.whtAmount || calculateWhtAmount(totalNoVat, 0);
-    const totalApTrade = totalNoVat + totalVat - whtAmount;
-
-    return {
-      totalNoVat: Math.round(totalNoVat * 100) / 100,
-      totalVat: Math.round(totalVat * 100) / 100,
-      totalApTrade: Math.round(totalApTrade * 100) / 100,
-    };
+    return calculateItemsVat(
+      formData.items.map((i) => ({ drAmount: i.debit, crAmount: i.credit })),
+      formData.vatType,
+      formData.whtAmount,
+    );
   }
 
   private async recalcVendorBalance(supplierCode: string): Promise<void> {
-    const supabase = await this.getClient();
-    const { error } = await supabase.rpc("recalculate_vendor_balance", {
-      p_vendor_code: supplierCode,
-    });
-    if (error) {
-      console.error("Failed to recalculate vendor balance:", error.message);
-    }
+    return recalcVendorBalance(await this.getClient(), supplierCode);
   }
 
   private mapInvoice(row: Record<string, unknown>): Invoice {

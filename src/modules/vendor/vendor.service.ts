@@ -1,5 +1,5 @@
 import { createServerClient } from "@/lib/supabase/server";
-import { NotFoundError, DuplicateError } from "@/lib/errors";
+import { NotFoundError, DuplicateError, AppError } from "@/lib/errors";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import type {
   Vendor,
@@ -8,8 +8,6 @@ import type {
   VendorListParams,
   VendorListResult,
   VendorSearchParams,
-  VendorAging,
-  VendorWithBalance,
 } from "./vendor.types";
 
 export class VendorService {
@@ -43,7 +41,7 @@ export class VendorService {
 
     const { data, count, error } = await query;
 
-    if (error) throw new Error(`Failed to fetch vendors: ${error.message}`);
+    if (error) throw new AppError(`Failed to fetch vendors: ${error.message}`, "VENDOR_ERROR");
 
     return {
       data: (data as Vendor[]) ?? [],
@@ -89,7 +87,7 @@ export class VendorService {
       if (error.code === "23505") {
         throw new DuplicateError("code", formData.code);
       }
-      throw new Error(`Failed to create vendor: ${error.message}`);
+      throw new AppError(`Failed to create vendor: ${error.message}`, "VENDOR_ERROR");
     }
 
     return data as Vendor;
@@ -128,7 +126,7 @@ export class VendorService {
       if (error.code === "23505") {
         throw new DuplicateError("code", formData.code ?? "");
       }
-      throw new Error(`Failed to update vendor: ${error.message}`);
+      throw new AppError(`Failed to update vendor: ${error.message}`, "VENDOR_ERROR");
     }
 
     return data as Vendor;
@@ -147,7 +145,7 @@ export class VendorService {
 
     const { error } = await supabase.from("vendors").delete().eq("id", id);
 
-    if (error) throw new Error(`Failed to delete vendor: ${error.message}`);
+    if (error) throw new AppError(`Failed to delete vendor: ${error.message}`, "VENDOR_ERROR");
   }
 
   async search(params: VendorSearchParams): Promise<VendorListResult> {
@@ -183,7 +181,7 @@ export class VendorService {
 
     const { data, count, error } = await query;
 
-    if (error) throw new Error(`Failed to search vendors: ${error.message}`);
+    if (error) throw new AppError(`Failed to search vendors: ${error.message}`, "VENDOR_ERROR");
 
     return {
       data: (data as Vendor[]) ?? [],
@@ -236,7 +234,7 @@ export class VendorService {
         .select()
         .single();
 
-      if (error) throw new Error(`Failed to update monthly balance: ${error.message}`);
+      if (error) throw new AppError(`Failed to update monthly balance: ${error.message}`, "VENDOR_ERROR");
       return data as VendorMonthlyBalance;
     }
 
@@ -290,7 +288,7 @@ export class VendorService {
       .select()
       .single();
 
-    if (error) throw new Error(`Failed to create monthly balance: ${error.message}`);
+    if (error) throw new AppError(`Failed to create monthly balance: ${error.message}`, "VENDOR_ERROR");
     return data as VendorMonthlyBalance;
   }
 }

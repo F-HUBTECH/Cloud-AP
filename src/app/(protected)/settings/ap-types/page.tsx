@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useTransition } from "react";
+import { useState, useEffect, useCallback, useMemo, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Plus, Pencil, Trash2, Search, Loader2 } from "lucide-react";
 import {
@@ -38,7 +38,7 @@ export default function ApTypesPage() {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -53,7 +53,7 @@ export default function ApTypesPage() {
       setItems((data as ApType[]) ?? []);
     }
     setLoading(false);
-  }, [search]);
+  }, [search, supabase]);
 
   useEffect(() => {
     fetchItems();

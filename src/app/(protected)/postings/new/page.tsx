@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { formatCurrency } from "@/lib/utils/format";
-import { cn } from "@/lib/utils/cn";
 import { ArrowLeft, Save, Plus, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
 

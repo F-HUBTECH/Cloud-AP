@@ -1,5 +1,6 @@
 import { createServerClient } from "@/lib/supabase/server";
 import { AppError } from "@/lib/errors";
+import { roundAmount } from "@/lib/utils/format";
 import type { APAgingReport, APAgingItem, VendorCardReport, VendorCardTransaction, DetailLedgerReport, DetailLedgerEntry, DashboardStats, RecentTransaction, APAgingParams, VendorCardParams, DetailLedgerParams, PaymentRegisterReport, PaymentRegisterItem, PaymentRegisterParams, InvoiceRegisterReport, InvoiceRegisterItem, InvoiceRegisterParams, VendorBalanceReport, VendorBalanceItem } from "./report.types";
 
 class ReportService {
@@ -75,25 +76,24 @@ class ReportService {
     }
 
     const items = Array.from(supplierAggMap.values());
-    const round = (n: number) => Math.round(n * 100) / 100;
 
     return {
       asOfDate,
       items: items.map(item => ({
         ...item,
-        currentAmount: round(item.currentAmount),
-        overdue1To30: round(item.overdue1To30),
-        overdue31To60: round(item.overdue31To60),
-        overdue61To90: round(item.overdue61To90),
-        overdue91Plus: round(item.overdue91Plus),
-        totalOutstanding: round(item.totalOutstanding),
+        currentAmount: roundAmount(item.currentAmount),
+        overdue1To30: roundAmount(item.overdue1To30),
+        overdue31To60: roundAmount(item.overdue31To60),
+        overdue61To90: roundAmount(item.overdue61To90),
+        overdue91Plus: roundAmount(item.overdue91Plus),
+        totalOutstanding: roundAmount(item.totalOutstanding),
       })),
-      totalCurrent: round(items.reduce((sum, i) => sum + i.currentAmount, 0)),
-      totalOverdue1To30: round(items.reduce((sum, i) => sum + i.overdue1To30, 0)),
-      totalOverdue31To60: round(items.reduce((sum, i) => sum + i.overdue31To60, 0)),
-      totalOverdue61To90: round(items.reduce((sum, i) => sum + i.overdue61To90, 0)),
-      totalOverdue91Plus: round(items.reduce((sum, i) => sum + i.overdue91Plus, 0)),
-      grandTotal: round(items.reduce((sum, i) => sum + i.totalOutstanding, 0)),
+      totalCurrent: roundAmount(items.reduce((sum, i) => sum + i.currentAmount, 0)),
+      totalOverdue1To30: roundAmount(items.reduce((sum, i) => sum + i.overdue1To30, 0)),
+      totalOverdue31To60: roundAmount(items.reduce((sum, i) => sum + i.overdue31To60, 0)),
+      totalOverdue61To90: roundAmount(items.reduce((sum, i) => sum + i.overdue61To90, 0)),
+      totalOverdue91Plus: roundAmount(items.reduce((sum, i) => sum + i.overdue91Plus, 0)),
+      grandTotal: roundAmount(items.reduce((sum, i) => sum + i.totalOutstanding, 0)),
     };
   }
 
@@ -288,8 +288,6 @@ class ReportService {
       .select("id, doc_number, doc_date, supplier_code, total_amount, balance, due_date, status, ap_type_code, updated_at")
       .neq("status", "cancelled");
 
-    const round = (n: number) => Math.round(n * 100) / 100;
-
     const totalPayable = invoices?.reduce((sum, t) => sum + (t.balance ?? 0), 0) ?? 0;
     const today = new Date();
     const oneWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -352,12 +350,12 @@ class ReportService {
     }
 
     return {
-      totalPayable: round(totalPayable),
-      totalOverdue: round(overdue.reduce((sum, t) => sum + (t.balance ?? 0), 0)),
-      totalPaidThisMonth: round(paidThisMonth?.reduce((sum, p) => sum + (p.total_net ?? 0), 0) ?? 0),
+      totalPayable: roundAmount(totalPayable),
+      totalOverdue: roundAmount(overdue.reduce((sum, t) => sum + (t.balance ?? 0), 0)),
+      totalPaidThisMonth: roundAmount(paidThisMonth?.reduce((sum, p) => sum + (p.total_net ?? 0), 0) ?? 0),
       totalPendingApproval: pendingApprovals?.length ?? 0,
-      totalDebitNotes: round(debitNotes?.reduce((sum, d) => sum + (d.total_amount ?? 0), 0) ?? 0),
-      totalDeposits: round(deposits?.reduce((sum, d) => sum + (d.amount ?? 0), 0) ?? 0),
+      totalDebitNotes: roundAmount(debitNotes?.reduce((sum, d) => sum + (d.total_amount ?? 0), 0) ?? 0),
+      totalDeposits: roundAmount(deposits?.reduce((sum, d) => sum + (d.amount ?? 0), 0) ?? 0),
       outstandingInvoices: invoices?.filter(t => (t.balance ?? 0) > 0).length ?? 0,
       upcomingDueThisWeek: upcomingDue.length,
       recentTransactions,
@@ -393,8 +391,6 @@ class ReportService {
       }
     }
 
-    const round = (n: number) => Math.round(n * 100) / 100;
-
     const items: PaymentRegisterItem[] = (data ?? []).map((row: Record<string, unknown>) => ({
       id: row.id as string,
       docNumber: row.doc_number as string,
@@ -403,10 +399,10 @@ class ReportService {
       supplierName: supplierMap.get(row.supplier_code as string) ?? "",
       payMethod: row.pay_method as string,
       chequeNumber: row.cheque_number as string | null,
-      totalAmount: round(Number(row.total_amount) || 0),
-      totalWht: round(Number(row.total_wht) || 0),
-      totalVat: round(Number(row.total_vat) || 0),
-      totalNet: round(Number(row.total_net) || 0),
+      totalAmount: roundAmount(Number(row.total_amount) || 0),
+      totalWht: roundAmount(Number(row.total_wht) || 0),
+      totalVat: roundAmount(Number(row.total_vat) || 0),
+      totalNet: roundAmount(Number(row.total_net) || 0),
       status: row.status as string,
     }));
 
@@ -414,10 +410,10 @@ class ReportService {
       dateFrom,
       dateTo,
       items,
-      totalAmount: round(items.reduce((s, i) => s + i.totalAmount, 0)),
-      totalWht: round(items.reduce((s, i) => s + i.totalWht, 0)),
-      totalVat: round(items.reduce((s, i) => s + i.totalVat, 0)),
-      totalNet: round(items.reduce((s, i) => s + i.totalNet, 0)),
+      totalAmount: roundAmount(items.reduce((s, i) => s + i.totalAmount, 0)),
+      totalWht: roundAmount(items.reduce((s, i) => s + i.totalWht, 0)),
+      totalVat: roundAmount(items.reduce((s, i) => s + i.totalVat, 0)),
+      totalNet: roundAmount(items.reduce((s, i) => s + i.totalNet, 0)),
     };
   }
 
@@ -451,8 +447,6 @@ class ReportService {
       }
     }
 
-    const round = (n: number) => Math.round(n * 100) / 100;
-
     const items: InvoiceRegisterItem[] = (data ?? []).map((row: Record<string, unknown>) => ({
       id: row.id as string,
       docNumber: row.doc_number as string,
@@ -461,10 +455,10 @@ class ReportService {
       supplierName: supplierMap.get(row.supplier_code as string) ?? "",
       invNumber: row.inv_number as string | null,
       apTypeCode: row.ap_type_code as string | null,
-      totalAmount: round(Number(row.total_amount) || 0),
-      vatAmount: round(Number(row.vat_amount) || 0),
-      whtAmount: round(Number(row.wht_amount) || 0),
-      balance: round(Number(row.balance) || 0),
+      totalAmount: roundAmount(Number(row.total_amount) || 0),
+      vatAmount: roundAmount(Number(row.vat_amount) || 0),
+      whtAmount: roundAmount(Number(row.wht_amount) || 0),
+      balance: roundAmount(Number(row.balance) || 0),
       status: row.status as string,
     }));
 
@@ -472,10 +466,10 @@ class ReportService {
       dateFrom,
       dateTo,
       items,
-      totalAmount: round(items.reduce((s, i) => s + i.totalAmount, 0)),
-      totalVat: round(items.reduce((s, i) => s + i.vatAmount, 0)),
-      totalWht: round(items.reduce((s, i) => s + i.whtAmount, 0)),
-      totalBalance: round(items.reduce((s, i) => s + i.balance, 0)),
+      totalAmount: roundAmount(items.reduce((s, i) => s + i.totalAmount, 0)),
+      totalVat: roundAmount(items.reduce((s, i) => s + i.vatAmount, 0)),
+      totalWht: roundAmount(items.reduce((s, i) => s + i.whtAmount, 0)),
+      totalBalance: roundAmount(items.reduce((s, i) => s + i.balance, 0)),
     };
   }
 
@@ -490,8 +484,6 @@ class ReportService {
 
     if (error) throw new AppError(error.message);
 
-    const round = (n: number) => Math.round(n * 100) / 100;
-
     const items: VendorBalanceItem[] = (data ?? []).map((row: Record<string, unknown>) => {
       const totalAmount = Number(row.total_amount) || 0;
       const totalPayment = Number(row.total_payment) || 0;
@@ -502,19 +494,19 @@ class ReportService {
         code: row.code as string,
         name_en: row.name_en as string,
         name_th: row.name_th as string | null,
-        totalAmount: round(totalAmount),
-        totalPayment: round(totalPayment),
-        openAmount: round(openAmount),
-        balance: round(balance),
+        totalAmount: roundAmount(totalAmount),
+        totalPayment: roundAmount(totalPayment),
+        openAmount: roundAmount(openAmount),
+        balance: roundAmount(balance),
       };
     });
 
     return {
       items,
-      totalAmount: round(items.reduce((s, i) => s + i.totalAmount, 0)),
-      totalPayment: round(items.reduce((s, i) => s + i.totalPayment, 0)),
-      totalOpenAmount: round(items.reduce((s, i) => s + i.openAmount, 0)),
-      totalBalance: round(items.reduce((s, i) => s + i.balance, 0)),
+      totalAmount: roundAmount(items.reduce((s, i) => s + i.totalAmount, 0)),
+      totalPayment: roundAmount(items.reduce((s, i) => s + i.totalPayment, 0)),
+      totalOpenAmount: roundAmount(items.reduce((s, i) => s + i.openAmount, 0)),
+      totalBalance: roundAmount(items.reduce((s, i) => s + i.balance, 0)),
     };
   }
 }

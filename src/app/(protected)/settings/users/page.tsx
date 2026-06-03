@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { createUser, updateUser, deleteUser } from "@/modules/auth/user.actions";
 import { cn } from "@/lib/utils/cn";
@@ -8,7 +8,6 @@ import { formatDate } from "@/lib/utils/format";
 import { Plus, Pencil, Trash2, Search, Loader2 } from "lucide-react";
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -52,7 +51,7 @@ export default function UsersPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -69,7 +68,7 @@ export default function UsersPage() {
       setUsers((data as AppUser[]) ?? []);
     }
     setLoading(false);
-  }, [search]);
+  }, [search, supabase]);
 
   useEffect(() => {
     fetchUsers();

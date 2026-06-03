@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2, Save } from "lucide-react";
 
@@ -60,7 +60,7 @@ export default function DocNumberPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const fetchConfig = useCallback(async () => {
     setLoading(true);
@@ -95,7 +95,7 @@ export default function DocNumberPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [supabase]);
 
   const fetchSequences = useCallback(async () => {
     try {
@@ -109,7 +109,7 @@ export default function DocNumberPage() {
     } catch {
       // sequences are read-only, silently ignore
     }
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
     Promise.all([fetchConfig(), fetchSequences()]);

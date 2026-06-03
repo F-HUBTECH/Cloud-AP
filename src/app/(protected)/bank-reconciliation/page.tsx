@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { createBankReconciliation, cancelBankReconciliation, reconcileBank } from "@/modules/bank/bank.actions";
+import { createBankReconciliation, cancelBankReconciliation, reconcileCheque } from "@/modules/bank/bank.actions";
 import { cn } from "@/lib/utils/cn";
 import { formatDate, formatCurrency } from "@/lib/utils/format";
-import { Plus, Search, Filter, Loader2, XCircle, CheckCircle } from "lucide-react";
+import { Plus, Search, Loader2, XCircle, CheckCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -77,7 +77,7 @@ export default function BankReconciliationPage() {
     amount: "",
   });
 
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const fetchReconciliations = useCallback(async () => {
     const { data, error: fetchError } = await supabase
@@ -96,7 +96,7 @@ export default function BankReconciliationPage() {
         }))
       );
     }
-  }, []);
+  }, [supabase]);
 
   const fetchCheques = useCallback(async () => {
     let query = supabase
@@ -124,7 +124,7 @@ export default function BankReconciliationPage() {
     } else {
       setCheques((data ?? []) as ChequeTransaction[]);
     }
-  }, [search, statusFilter]);
+  }, [search, statusFilter, supabase]);
 
   const fetchBanks = useCallback(async () => {
     const { data } = await supabase
@@ -133,7 +133,7 @@ export default function BankReconciliationPage() {
       .eq("is_active", true)
       .order("code");
     if (data) setBanks(data as BankAccount[]);
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
     setLoading(true);
@@ -216,7 +216,7 @@ export default function BankReconciliationPage() {
     setError(null);
 
     try {
-      const result = await reconcileBank(reconcileId);
+      const result = await reconcileCheque(reconcileId);
       if (!result.success) {
         setError(result.error ?? "Failed to reconcile cheque");
       } else {

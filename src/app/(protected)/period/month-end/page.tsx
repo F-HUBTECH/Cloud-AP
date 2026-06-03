@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { closeMonth, reopenPeriod } from "@/modules/period/period.actions";
 import { formatCurrency } from "@/lib/utils/format";
@@ -48,7 +48,7 @@ export default function MonthEndPage() {
   const [reopenDialog, setReopenDialog] = useState<string | null>(null);
   const [closeResult, setCloseResult] = useState<{ vendorsProcessed: number; balancesCreated: number } | null>(null);
 
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const currentYear = new Date().getFullYear();
   const yearOptions = [currentYear - 1, currentYear, currentYear + 1];
   const [yearFilter, setYearFilter] = useState(currentYear);
@@ -67,7 +67,7 @@ export default function MonthEndPage() {
       setPeriods((data as Period[]) ?? []);
     }
     setLoading(false);
-  }, [yearFilter]);
+  }, [yearFilter, supabase]);
 
   const fetchBalances = useCallback(async () => {
     const { data } = await supabase
@@ -89,7 +89,7 @@ export default function MonthEndPage() {
         }))
       );
     }
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
     fetchData();

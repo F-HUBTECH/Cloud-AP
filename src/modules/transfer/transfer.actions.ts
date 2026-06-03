@@ -13,7 +13,8 @@ export async function listTransfers(params?: {
   dateTo?: string;
 }) {
   try {
-    return await transferService.list(params);
+    const result = await transferService.list(params);
+    return { success: true as const, data: result };
   } catch (error) {
     if (error instanceof AppError) return { success: false as const, error: error.message };
     return { success: false as const, error: "Failed to list transfers" };
@@ -22,7 +23,8 @@ export async function listTransfers(params?: {
 
 export async function getTransfer(id: string) {
   try {
-    return await transferService.getById(id);
+    const result = await transferService.getById(id);
+    return { success: true as const, data: result };
   } catch (error) {
     if (error instanceof AppError) return { success: false as const, error: error.message };
     return { success: false as const, error: "Failed to get transfer" };

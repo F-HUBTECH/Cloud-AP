@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatCurrency } from "@/lib/utils/format";
-import { cn } from "@/lib/utils/cn";
-import { Loader2, FileDown } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 interface AgingRow {
   supplier_code: string;

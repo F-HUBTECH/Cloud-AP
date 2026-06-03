@@ -9,9 +9,7 @@ import {
   CreditCard,
   Calendar,
   Users,
-  BookOpen,
   Hash,
-  Settings2,
   BarChart3,
 } from "lucide-react";
 

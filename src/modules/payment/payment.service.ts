@@ -3,6 +3,7 @@ import { NotFoundError, AppError, PeriodClosedError } from "@/lib/errors";
 import { MODULE_CODES, DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { canCreate, canUpdate, canDelete } from "@/lib/utils/permissions";
 import { glPostingService } from "@/modules/gl-posting/gl-posting.service";
+import { getGLTradeAccount } from "@/lib/utils/gl-helpers";
 import { logAudit } from "@/lib/utils/audit";
 import type {
   Payment,
@@ -15,6 +16,10 @@ import type {
 } from "./payment.types";
 
 class PaymentService {
+  private async getClient() {
+    return createServerClient();
+  }
+
   async list(params: PaymentListParams = {}): Promise<PaymentListResult> {
     const {
       page = 1,
@@ -26,7 +31,7 @@ class PaymentService {
       search,
     } = params;
 
-    const supabase = await createServerClient();
+    const supabase = await this.getClient();
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
 
@@ -58,7 +63,7 @@ class PaymentService {
   }
 
   async getById(id: string): Promise<PaymentWithVendor> {
-    const supabase = await createServerClient();
+    const supabase = await this.getClient();
 
     const { data: payment, error: paymentError } = await supabase
       .from("payments")
@@ -111,7 +116,7 @@ class PaymentService {
       throw new AppError("No permission to create payment", "FORBIDDEN", 403);
     }
 
-    const supabase = await createServerClient();
+    const supabase = await this.getClient();
 
     if (formData.period_year && formData.period_month) {
       const { data: period } = await supabase
@@ -226,7 +231,7 @@ class PaymentService {
       throw new AppError("No permission to approve payment", "FORBIDDEN", 403);
     }
 
-    const supabase = await createServerClient();
+    const supabase = await this.getClient();
 
     const { data: existing, error: fetchError } = await supabase
       .from("payments")
@@ -273,7 +278,7 @@ class PaymentService {
       throw new AppError("No permission to update payment", "FORBIDDEN", 403);
     }
 
-    const supabase = await createServerClient();
+    const supabase = await this.getClient();
 
     const { data: payment, error: fetchError } = await supabase
       .from("payments")
@@ -328,7 +333,7 @@ class PaymentService {
         await supabase
           .from("invoices")
           .update({
-            status: "paid",
+            status: newBalance <= 0.01 ? "paid" : "approved",
             paid_amount: newPaidAmount,
             balance: Math.max(newBalance, 0),
           })
@@ -362,13 +367,9 @@ class PaymentService {
     });
 
     try {
-      const { data: tradeAccount } = await (await createServerClient())
-        .from("config")
-        .select("acc_trade")
-        .single();
-      const tradeGl = (tradeAccount as Record<string, unknown>)?.acc_trade as string ?? "2000";
+      const tradeGl = await getGLTradeAccount(await this.getClient());
 
-      const paymentItems = await (await createServerClient())
+      const paymentItems = await (await this.getClient())
         .from("payment_items")
         .select("gl_account, dr_amount, cr_amount")
         .eq("payment_id", id);
@@ -422,7 +423,7 @@ class PaymentService {
       throw new AppError("No permission to cancel payment", "FORBIDDEN", 403);
     }
 
-    const supabase = await createServerClient();
+    const supabase = await this.getClient();
 
     const { data: payment, error: fetchError } = await supabase
       .from("payments")
@@ -505,7 +506,7 @@ class PaymentService {
   }
 
   async cancelAssign(id: string, reason: string): Promise<Payment> {
-    const supabase = await createServerClient();
+    const supabase = await this.getClient();
 
     const { data: payment, error: fetchError } = await supabase
       .from("payments")
@@ -521,7 +522,7 @@ class PaymentService {
       throw new AppError("Cannot cancel a paid assignment", "PAYMENT_ALREADY_PAID", 422);
     }
 
-    const { data: { user: authUser } } = await supabase.auth.getUser();
+    const { data: { user: _authUser } } = await supabase.auth.getUser();
 
     const { data: paymentInvoices } = await supabase
       .from("payment_invoices")
@@ -590,7 +591,7 @@ class PaymentService {
   }
 
   async searchOutstanding(supplierCode?: string): Promise<OutstandingInvoice[]> {
-    const supabase = await createServerClient();
+    const supabase = await this.getClient();
 
     let query = supabase
       .from("invoices")

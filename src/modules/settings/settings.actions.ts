@@ -17,86 +17,134 @@ import {
 } from "./settings.schema";
 
 export async function createApType(input: unknown) {
-  const data = apTypeSchema.parse(input);
-  return settingsService.createApType(data);
+  const parsed = apTypeSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: "Validation failed", details: parsed.error.flatten().fieldErrors };
+  }
+  return settingsService.createApType(parsed.data);
 }
 
 export async function updateApType(input: unknown) {
-  const data = apTypeUpdateSchema.parse(input);
-  const { id, ...updateData } = data;
+  const parsed = apTypeUpdateSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: "Validation failed", details: parsed.error.flatten().fieldErrors };
+  }
+  const { id, ...updateData } = parsed.data;
   return settingsService.updateApType(id, updateData);
 }
 
 export async function deleteApType(input: unknown) {
-  const { id } = deleteSchema.parse(input);
-  return settingsService.deleteApType(id);
+  const parsed = deleteSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: "Validation failed", details: parsed.error.flatten().fieldErrors };
+  }
+  return settingsService.deleteApType(parsed.data.id);
 }
 
 export async function createVatCode(input: unknown) {
-  const data = vatCodeSchema.parse(input);
-  return settingsService.createVatCode(data);
+  const parsed = vatCodeSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: "Validation failed", details: parsed.error.flatten().fieldErrors };
+  }
+  return settingsService.createVatCode(parsed.data);
 }
 
 export async function updateVatCode(input: unknown) {
-  const data = vatCodeUpdateSchema.parse(input);
-  const { id, ...updateData } = data;
+  const parsed = vatCodeUpdateSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: "Validation failed", details: parsed.error.flatten().fieldErrors };
+  }
+  const { id, ...updateData } = parsed.data;
   return settingsService.updateVatCode(id, updateData);
 }
 
 export async function deleteVatCode(input: unknown) {
-  const { id } = deleteSchema.parse(input);
-  return settingsService.deleteVatCode(id);
+  const parsed = deleteSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: "Validation failed", details: parsed.error.flatten().fieldErrors };
+  }
+  return settingsService.deleteVatCode(parsed.data.id);
 }
 
 export async function createWhtCode(input: unknown) {
-  const data = whtCodeSchema.parse(input);
-  return settingsService.createWhtCode(data);
+  const parsed = whtCodeSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: "Validation failed", details: parsed.error.flatten().fieldErrors };
+  }
+  return settingsService.createWhtCode(parsed.data);
 }
 
 export async function updateWhtCode(input: unknown) {
-  const data = whtCodeUpdateSchema.parse(input);
-  const { id, ...updateData } = data;
+  const parsed = whtCodeUpdateSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: "Validation failed", details: parsed.error.flatten().fieldErrors };
+  }
+  const { id, ...updateData } = parsed.data;
   return settingsService.updateWhtCode(id, updateData);
 }
 
 export async function deleteWhtCode(input: unknown) {
-  const { id } = deleteSchema.parse(input);
-  return settingsService.deleteWhtCode(id);
+  const parsed = deleteSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: "Validation failed", details: parsed.error.flatten().fieldErrors };
+  }
+  return settingsService.deleteWhtCode(parsed.data.id);
 }
 
 export async function createPaymentCode(input: unknown) {
-  const data = paymentCodeSchema.parse(input);
-  return settingsService.createPaymentCode(data);
+  const parsed = paymentCodeSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: "Validation failed", details: parsed.error.flatten().fieldErrors };
+  }
+  return settingsService.createPaymentCode(parsed.data);
 }
 
 export async function updatePaymentCode(input: unknown) {
-  const data = paymentCodeUpdateSchema.parse(input);
-  const { id, ...updateData } = data;
+  const parsed = paymentCodeUpdateSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: "Validation failed", details: parsed.error.flatten().fieldErrors };
+  }
+  const { id, ...updateData } = parsed.data;
   return settingsService.updatePaymentCode(id, updateData);
 }
 
 export async function deletePaymentCode(input: unknown) {
-  const { id } = deleteSchema.parse(input);
-  return settingsService.deletePaymentCode(id);
+  const parsed = deleteSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: "Validation failed", details: parsed.error.flatten().fieldErrors };
+  }
+  return settingsService.deletePaymentCode(parsed.data.id);
 }
 
 export async function createGlAccount(input: unknown) {
-  const data = glAccountSchema.parse(input);
-  return settingsService.createGlAccount(data);
+  const parsed = glAccountSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: "Validation failed", details: parsed.error.flatten().fieldErrors };
+  }
+  return settingsService.createGlAccount(parsed.data);
 }
 
 export async function updateGlAccount(input: unknown) {
-  const data = glAccountUpdateSchema.parse(input);
-  const { id, ...updateData } = data;
+  const parsed = glAccountUpdateSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: "Validation failed", details: parsed.error.flatten().fieldErrors };
+  }
+  const { id, ...updateData } = parsed.data;
   return settingsService.updateGlAccount(id, updateData);
 }
 
 export async function deleteGlAccount(input: unknown) {
-  const { id } = deleteSchema.parse(input);
-  return settingsService.deleteGlAccount(id);
+  const parsed = deleteSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: "Validation failed", details: parsed.error.flatten().fieldErrors };
+  }
+  return settingsService.deleteGlAccount(parsed.data.id);
 }
 
 export async function updateConfig(input: unknown): Promise<Record<string, unknown>> {
-  const data = configSchema.parse(input);
-  return settingsService.updateConfig(data) as Promise<Record<string, unknown>>;
+  const parsed = configSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: "Validation failed", details: parsed.error.flatten().fieldErrors };
+  }
+  return settingsService.updateConfig(parsed.data) as Promise<Record<string, unknown>>;
 }

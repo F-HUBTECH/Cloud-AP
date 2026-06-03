@@ -3,10 +3,20 @@
 import { approvalService } from "./approval.service";
 import { AppError } from "@/lib/errors";
 import type { ApprovalFormData, ApprovalActionData, ApprovalListParams } from "./approval.types";
+import {
+  approvalFormDataSchema,
+  approvalActionDataSchema,
+  approvalListParamsSchema,
+} from "./approval.schema";
 
 export async function requestApproval(formData: ApprovalFormData) {
+  const parsed = approvalFormDataSchema.safeParse(formData);
+  if (!parsed.success) {
+    return { success: false, error: "Validation failed", details: parsed.error.flatten().fieldErrors };
+  }
+
   try {
-    const result = await approvalService.requestApproval(formData);
+    const result = await approvalService.requestApproval(parsed.data);
     return { success: true, data: result };
   } catch (error) {
     if (error instanceof AppError) {
@@ -17,8 +27,13 @@ export async function requestApproval(formData: ApprovalFormData) {
 }
 
 export async function approveEntity(actionData: ApprovalActionData) {
+  const parsed = approvalActionDataSchema.safeParse(actionData);
+  if (!parsed.success) {
+    return { success: false, error: "Validation failed", details: parsed.error.flatten().fieldErrors };
+  }
+
   try {
-    const result = await approvalService.approve(actionData);
+    const result = await approvalService.approve(parsed.data);
     return { success: true, data: result };
   } catch (error) {
     if (error instanceof AppError) {
@@ -29,8 +44,13 @@ export async function approveEntity(actionData: ApprovalActionData) {
 }
 
 export async function rejectEntity(actionData: ApprovalActionData) {
+  const parsed = approvalActionDataSchema.safeParse(actionData);
+  if (!parsed.success) {
+    return { success: false, error: "Validation failed", details: parsed.error.flatten().fieldErrors };
+  }
+
   try {
-    const result = await approvalService.reject(actionData);
+    const result = await approvalService.reject(parsed.data);
     return { success: true, data: result };
   } catch (error) {
     if (error instanceof AppError) {
@@ -41,8 +61,13 @@ export async function rejectEntity(actionData: ApprovalActionData) {
 }
 
 export async function getPendingApprovals(params?: ApprovalListParams) {
+  const parsed = approvalListParamsSchema.safeParse(params ?? {});
+  if (!parsed.success) {
+    return { success: false, error: "Validation failed", details: parsed.error.flatten().fieldErrors };
+  }
+
   try {
-    const result = await approvalService.getPendingForUser(params);
+    const result = await approvalService.getPendingForUser(parsed.data);
     return { success: true, data: result };
   } catch (error) {
     if (error instanceof AppError) {
@@ -53,8 +78,13 @@ export async function getPendingApprovals(params?: ApprovalListParams) {
 }
 
 export async function getApprovalHistory(params?: ApprovalListParams) {
+  const parsed = approvalListParamsSchema.safeParse(params ?? {});
+  if (!parsed.success) {
+    return { success: false, error: "Validation failed", details: parsed.error.flatten().fieldErrors };
+  }
+
   try {
-    const result = await approvalService.getApprovalHistory(params);
+    const result = await approvalService.getApprovalHistory(parsed.data);
     return { success: true, data: result };
   } catch (error) {
     if (error instanceof AppError) {

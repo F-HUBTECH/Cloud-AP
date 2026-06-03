@@ -1,7 +1,7 @@
 import { createServerClient } from "@/lib/supabase/server";
 import { NotFoundError, AppError } from "@/lib/errors";
 import { DEFAULT_PAGE_SIZE, MODULE_CODES } from "@/lib/constants";
-import { canCreate, canRead, canUpdate } from "@/lib/utils/permissions";
+import { canCreate, canUpdate } from "@/lib/utils/permissions";
 import type { BankReconciliation, ChequeTransaction, BankReconciliationFormData, BankReconciliationWithDetails, BankReconciliationListParams, BankReconciliationListResult } from "./bank.types";
 
 class BankReconService {
