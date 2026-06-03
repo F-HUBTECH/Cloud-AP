@@ -87,6 +87,13 @@ export class VendorService {
       if (error.code === "23505") {
         throw new DuplicateError("code", formData.code);
       }
+      if (error.code === "42501") {
+        throw new AppError(
+          "Permission denied: Your account does not have a role that allows creating vendors. Contact an administrator to assign you a role (ADMIN, AP_USER, or AP_MANAGER).",
+          "RLS_VIOLATION",
+          403
+        );
+      }
       throw new AppError(`Failed to create vendor: ${error.message}`, "VENDOR_ERROR");
     }
 

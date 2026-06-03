@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
+import { usePermission } from "@/hooks/use-permission";
 import { APP_NAME, MODULE_CODES } from "@/lib/constants";
 import {
   LayoutDashboard,
@@ -26,9 +27,11 @@ interface NavItem {
   href: string;
   icon: React.ElementType;
   moduleCode?: string;
+  adminOnly?: boolean;
+  financeOnly?: boolean;
 }
 
-const navItems: NavItem[] = [
+const ALL_NAV_ITEMS: NavItem[] = [
   {
     label: "Dashboard",
     href: "/dashboard",
@@ -56,21 +59,25 @@ const navItems: NavItem[] = [
     label: "Transfers",
     href: "/transfers",
     icon: ArrowRightLeft,
+    financeOnly: true,
   },
   {
     label: "Bank Recon",
     href: "/bank-reconciliation",
     icon: Landmark,
+    financeOnly: true,
   },
   {
     label: "Deposit Apply",
     href: "/deposit-applications",
     icon: Banknote,
+    financeOnly: true,
   },
   {
     label: "Check Account",
     href: "/check-account",
     icon: ClipboardCheck,
+    financeOnly: true,
   },
   {
     label: "WHT Report",
@@ -88,12 +95,26 @@ const navItems: NavItem[] = [
     href: "/settings",
     icon: Settings,
     moduleCode: MODULE_CODES.CONFIG,
+    adminOnly: true,
   },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { roles, isLoading: rolesLoading } = usePermission();
   const [collapsed, setCollapsed] = useState(false);
+
+  const isAdmin = useMemo(() => roles.includes("ADMIN"), [roles]);
+  const isFinance = useMemo(() => roles.includes("FINANCE") || isAdmin, [roles, isAdmin]);
+
+  const navItems = useMemo(() => {
+    if (rolesLoading) return ALL_NAV_ITEMS; // show all while loading to avoid layout shift
+    return ALL_NAV_ITEMS.filter((item) => {
+      if (item.adminOnly && !isAdmin) return false;
+      if (item.financeOnly && !isFinance) return false;
+      return true;
+    });
+  }, [rolesLoading, isAdmin, isFinance]);
 
   return (
     <aside

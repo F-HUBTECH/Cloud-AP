@@ -1,16 +1,5 @@
 import { createServerClient } from "@/lib/supabase/server";
-import { formatCurrency } from "@/lib/utils/format";
-import { cn } from "@/lib/utils/cn";
-import {
-  Users,
-  FileText,
-  CreditCard,
-  AlertTriangle,
-  TrendingUp,
-  TrendingDown,
-  Clock,
-  CheckCircle2,
-} from "lucide-react";
+import { DashboardRealtime } from "@/components/dashboard/dashboard-realtime";
 
 export const revalidate = 60;
 
@@ -91,58 +80,6 @@ async function getDashboardStats(): Promise<DashboardStats> {
 export default async function DashboardPage() {
   const stats = await getDashboardStats();
 
-  const statCards = [
-    {
-      label: "Active Vendors",
-      value: `${stats.activeVendors} / ${stats.totalVendors}`,
-      icon: Users,
-      color: "text-blue-600",
-      bg: "bg-blue-50",
-    },
-    {
-      label: "Pending Invoices",
-      value: stats.pendingInvoices.toString(),
-      icon: Clock,
-      color: "text-yellow-600",
-      bg: "bg-yellow-50",
-    },
-    {
-      label: "Approved Invoices",
-      value: stats.approvedInvoices.toString(),
-      icon: CheckCircle2,
-      color: "text-green-600",
-      bg: "bg-green-50",
-    },
-    {
-      label: "Total Payable",
-      value: formatCurrency(stats.totalPayable),
-      icon: FileText,
-      color: "text-purple-600",
-      bg: "bg-purple-50",
-    },
-    {
-      label: "Overdue Amount",
-      value: formatCurrency(stats.overdueAmount),
-      icon: AlertTriangle,
-      color: "text-red-600",
-      bg: "bg-red-50",
-    },
-    {
-      label: "Payments This Month",
-      value: stats.paymentsThisMonth.toString(),
-      icon: CreditCard,
-      color: "text-indigo-600",
-      bg: "bg-indigo-50",
-    },
-    {
-      label: "Paid This Month",
-      value: formatCurrency(stats.paidThisMonth),
-      icon: stats.paidThisMonth > 0 ? TrendingUp : TrendingDown,
-      color: "text-emerald-600",
-      bg: "bg-emerald-50",
-    },
-  ];
-
   return (
     <div className="space-y-6">
       <div>
@@ -150,24 +87,7 @@ export default async function DashboardPage() {
         <p className="text-muted-foreground">Accounts Payable overview</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {statCards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <div key={card.label} className="card p-6">
-              <div className="flex items-center gap-4">
-                <div className={cn("flex h-10 w-10 items-center justify-center rounded-lg", card.bg)}>
-                  <Icon className={cn("h-5 w-5", card.color)} />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">{card.label}</p>
-                  <p className="text-xl font-bold">{card.value}</p>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <DashboardRealtime initialStats={stats} />
     </div>
   );
 }

@@ -1,54 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/client";
+import { useAuth, useSignOut } from "@/hooks/use-auth";
 import { APP_NAME } from "@/lib/constants";
 import { LogOut, ChevronDown } from "lucide-react";
 
-interface UserProfile {
-  email: string;
-  fullName: string;
-  avatarUrl: string | null;
-}
-
 export function Header() {
-  const router = useRouter();
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const { user, isLoading } = useAuth();
+  const signOut = useSignOut();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  useEffect(() => {
-    async function loadUser() {
-      const supabase = createClient();
-      const {
-        data: { user: authUser },
-      } = await supabase.auth.getUser();
-
-      if (authUser) {
-        const { data: profile } = await supabase
-          .from("app_users")
-          .select("display_name, email")
-          .eq("auth_uid", authUser.id)
-          .single();
-
-        setUser({
-          email: profile?.email ?? authUser.email ?? "",
-          fullName:
-            profile?.display_name ?? authUser.user_metadata?.full_name ?? "",
-          avatarUrl: authUser.user_metadata?.avatar_url ?? null,
-        });
-      }
-    }
-
-    loadUser();
-  }, []);
-
   async function handleSignOut() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/login");
-    router.refresh();
+    await signOut();
   }
 
   const initials = user?.fullName
@@ -69,7 +33,11 @@ export function Header() {
           onClick={() => setMenuOpen(!menuOpen)}
           className="flex items-center gap-2 rounded-lg px-3 py-1.5 hover:bg-accent"
         >
-          {user?.avatarUrl ? (
+          {isLoading ? (
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted">
+              <span className="text-xs text-muted-foreground">...</span>
+            </div>
+          ) : user?.avatarUrl ? (
             <Image
               src={user.avatarUrl}
               alt={user.fullName}
@@ -83,7 +51,7 @@ export function Header() {
             </div>
           )}
           <span className="max-w-[150px] truncate text-sm font-medium">
-            {user?.fullName ?? "User"}
+            {isLoading ? "Loading..." : user?.fullName ?? "User"}
           </span>
           <ChevronDown className="h-4 w-4 text-muted-foreground" />
         </button>
