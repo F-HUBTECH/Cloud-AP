@@ -129,7 +129,7 @@ export default function YearEndPage() {
       </div>
 
       {message && (
-        <div className={cn("flex items-center gap-2 rounded-md p-3 text-sm", message.type === "success" ? "bg-green-50 text-green-700" : "bg-destructive/10 text-destructive")}>
+        <div className={cn("flex items-center gap-2 rounded-md p-3 text-sm", message.type === "success" ? "bg-success-bg text-success" : "bg-destructive/10 text-destructive")}>
           {message.type === "success" ? <CheckCircle className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
           {message.text}
         </div>

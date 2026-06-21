@@ -5,7 +5,16 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
-import { ArrowLeft, Save, Plus, Trash2, Loader2, XCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Save,
+  Plus,
+  Trash2,
+  Loader2,
+  XCircle,
+  Pencil,
+  FileText,
+} from "lucide-react";
 import Link from "next/link";
 
 interface InvoiceDetail {
@@ -38,7 +47,7 @@ interface LineItem {
   cr_amount: number;
 }
 
-const statusColorMap: Record<string, string> = {
+const STATUS_BADGE: Record<string, string> = {
   draft: "badge-info",
   pending_approval: "badge-warning",
   approved: "badge-success",
@@ -48,7 +57,14 @@ const statusColorMap: Record<string, string> = {
   voided: "badge-danger",
 };
 
-export default function VoucherDetailPage({ params }: { params: Promise<{ id: string }> }) {
+const CAN_EDIT = ["draft"];
+const CAN_CANCEL = ["draft", "pending_approval", "approved"];
+
+export default function VoucherDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const router = useRouter();
   const [id, setId] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -102,7 +118,7 @@ export default function VoucherDetailPage({ params }: { params: Promise<{ id: st
         vat_type: detail.vat_type ?? "none",
         wht_code: detail.wht_code ?? "",
       });
-      setIsEditing(detail.status === "draft");
+      setIsEditing(CAN_EDIT.includes(detail.status));
     }
 
     const { data: items } = await supabase
@@ -148,7 +164,9 @@ export default function VoucherDetailPage({ params }: { params: Promise<{ id: st
   const removeLine = useCallback((index: number) => {
     setLines((prev) => {
       if (prev.length <= 1) return prev;
-      return prev.filter((_, i) => i !== index).map((l, i) => ({ ...l, line_no: i + 1 }));
+      return prev
+        .filter((_, i) => i !== index)
+        .map((l, i) => ({ ...l, line_no: i + 1 }));
     });
   }, []);
 
@@ -166,9 +184,7 @@ export default function VoucherDetailPage({ params }: { params: Promise<{ id: st
 
     try {
       const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setError("Authentication required");
         return;
@@ -216,7 +232,9 @@ export default function VoucherDetailPage({ params }: { params: Promise<{ id: st
       await supabase.from("invoice_items").delete().eq("invoice_id", invoice.id);
 
       if (items.length > 0) {
-        const { error: itemsError } = await supabase.from("invoice_items").insert(items);
+        const { error: itemsError } = await supabase
+          .from("invoice_items")
+          .insert(items);
         if (itemsError) {
           setError(itemsError.message);
           return;
@@ -232,6 +250,31 @@ export default function VoucherDetailPage({ params }: { params: Promise<{ id: st
     }
   }
 
+  async function handleCancel() {
+    const reason = prompt("Enter reason for cancellation:");
+    if (!reason?.trim()) return;
+    setIsSaving(true);
+    setError(null);
+    try {
+      const { cancelVoucher } = await import(
+        "@/modules/posting/posting.actions"
+      );
+      const result = await cancelVoucher(id, reason);
+      if (result.success) {
+        router.push("/postings");
+      } else {
+        setError(result.error ?? "Failed to cancel voucher");
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to cancel voucher"
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  // Loading state
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -240,43 +283,91 @@ export default function VoucherDetailPage({ params }: { params: Promise<{ id: st
     );
   }
 
+  // Not found
   if (!invoice) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Link href="/postings" className="btn-ghost">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-          <h1 className="text-2xl font-bold tracking-tight">Voucher not found</h1>
-        </div>
+      <div className="card flex flex-col items-center justify-center py-16 text-center">
+        <FileText className="mb-3 h-10 w-10 text-muted-foreground/40" />
+        <h1 className="text-lg font-semibold">Voucher not found</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          This voucher may have been deleted or the link is invalid.
+        </p>
+        <Link href="/postings" className="btn-outline mt-4">
+          <ArrowLeft className="h-4 w-4" />
+          Back to Vouchers
+        </Link>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/postings" className="btn-ghost">
+      {/* Header */}
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-start gap-4">
+          <Link href="/postings" className="btn-ghost mt-0.5">
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Voucher {invoice.doc_number}
-            </h1>
-            <p className="text-muted-foreground">
-              {isEditing ? "Edit voucher" : "Voucher detail view"}
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold tracking-tight">
+                {invoice.doc_number}
+              </h1>
+              <span
+                className={cn(
+                  "badge",
+                  STATUS_BADGE[invoice.status] ?? "badge-info"
+                )}
+              >
+                {invoice.status.replace(/_/g, " ")}
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {invoice.supplier_code}
+              {invoice.inv_number && <span> · Inv. {invoice.inv_number}</span>}
             </p>
           </div>
         </div>
-        <span
-          className={cn(
-            "badge",
-            statusColorMap[invoice.status] ?? "badge-info"
+
+        <div className="flex items-center gap-2">
+          {CAN_EDIT.includes(invoice.status) && !isEditing && (
+            <button
+              type="button"
+              onClick={() => setIsEditing(true)}
+              className="btn-outline"
+            >
+              <Pencil className="h-4 w-4" />
+              Edit
+            </button>
           )}
-        >
-          {invoice.status.replace(/_/g, " ")}
-        </span>
+          {isEditing && (
+            <button
+              type="button"
+              onClick={() => {
+                setIsEditing(false);
+                fetchInvoice();
+              }}
+              className="btn-ghost"
+            >
+              Cancel Edit
+            </button>
+          )}
+          {CAN_CANCEL.includes(invoice.status) && !isEditing && (
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="btn-destructive"
+              disabled={isSaving}
+            >
+              {isSaving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <XCircle className="h-4 w-4" />
+              )}
+              Cancel Voucher
+            </button>
+          )}
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -286,153 +377,132 @@ export default function VoucherDetailPage({ params }: { params: Promise<{ id: st
           </div>
         )}
 
-        <div className="card p-6">
-          <h2 className="mb-4 text-lg font-semibold">Header Information</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="space-y-2">
-              <label htmlFor="doc_date" className="label-text">
-                Document Date
-              </label>
+        {/* Info + Summary grid */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Header Info */}
+          <div className="card p-6 lg:col-span-2 space-y-4">
+            <h2 className="text-sm font-semibold text-muted-foreground">
+              Voucher Header
+            </h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {isEditing ? (
-                <input
-                  id="doc_date"
-                  type="date"
-                  value={header.doc_date}
-                  onChange={(e) => setHeader((h) => ({ ...h, doc_date: e.target.value }))}
-                  className="input-field"
-                />
+                <>
+                  <Field label="Document Date">
+                    <input
+                      type="date"
+                      value={header.doc_date}
+                      onChange={(e) =>
+                        setHeader((h) => ({ ...h, doc_date: e.target.value }))
+                      }
+                      className="input-field"
+                    />
+                  </Field>
+                  <Field label="Supplier">
+                    <p className="text-sm font-medium pt-2">{invoice.supplier_code}</p>
+                  </Field>
+                </>
               ) : (
-                <p className="font-medium">{formatDate(invoice.doc_date)}</p>
+                <>
+                  <InfoItem label="Document Date" value={formatDate(invoice.doc_date)} />
+                  <InfoItem label="Supplier" value={invoice.supplier_code} />
+                </>
+              )}
+              {isEditing ? (
+                <Field label="Invoice Number">
+                  <input value={header.inv_number} onChange={(e) => setHeader((h) => ({ ...h, inv_number: e.target.value }))} className="input-field" maxLength={30} />
+                </Field>
+              ) : (
+                <InfoItem label="Invoice Number" value={invoice.inv_number} />
+              )}
+              {isEditing ? (
+                <Field label="Invoice Date">
+                  <input type="date" value={header.inv_date} onChange={(e) => setHeader((h) => ({ ...h, inv_date: e.target.value }))} className="input-field" />
+                </Field>
+              ) : (
+                <InfoItem label="Invoice Date" value={invoice.inv_date ? formatDate(invoice.inv_date) : null} />
+              )}
+              {isEditing ? (
+                <Field label="Due Date">
+                  <input type="date" value={header.due_date} onChange={(e) => setHeader((h) => ({ ...h, due_date: e.target.value }))} className="input-field" />
+                </Field>
+              ) : (
+                <InfoItem label="Due Date" value={invoice.due_date ? formatDate(invoice.due_date) : null} />
+              )}
+              {isEditing ? (
+                <Field label="VAT Type">
+                  <select value={header.vat_type} onChange={(e) => setHeader((h) => ({ ...h, vat_type: e.target.value }))} className="input-field">
+                    <option value="none">No VAT</option>
+                    <option value="exclusive">Exclusive</option>
+                    <option value="inclusive">Inclusive</option>
+                    <option value="exempt">Exempt</option>
+                  </select>
+                </Field>
+              ) : (
+                <InfoItem label="VAT Type" value={invoice.vat_type} />
+              )}
+              {isEditing ? (
+                <>
+                  <Field label="AP Type">
+                    <input value={header.ap_type_code} onChange={(e) => setHeader((h) => ({ ...h, ap_type_code: e.target.value }))} className="input-field" maxLength={5} />
+                  </Field>
+                  <Field label="WHT Code">
+                    <input value={header.wht_code} onChange={(e) => setHeader((h) => ({ ...h, wht_code: e.target.value }))} className="input-field" maxLength={5} />
+                  </Field>
+                </>
+              ) : (
+                <>
+                  <InfoItem label="AP Type" value={invoice.ap_type_code} />
+                  <InfoItem label="WHT Code" value={invoice.wht_code} />
+                </>
               )}
             </div>
-            <div className="space-y-2">
-              <label className="label-text">Supplier</label>
-              <p className="font-medium">{invoice.supplier_code}</p>
+            {isEditing ? (
+              <Field label="Remark">
+                <textarea value={header.remark} onChange={(e) => setHeader((h) => ({ ...h, remark: e.target.value }))} className="input-field min-h-[80px]" rows={2} />
+              </Field>
+            ) : invoice.remark ? (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Remark</p>
+                <p className="text-sm text-muted-foreground bg-muted/50 rounded-md p-3">{invoice.remark}</p>
+              </div>
+            ) : null}
+          </div>
+
+          {/* Summary */}
+          <div className="card p-6 space-y-4">
+            <h2 className="text-sm font-semibold text-muted-foreground">Summary</h2>
+            <div>
+              <p className="text-xs text-muted-foreground">Total Amount</p>
+              <p className="text-2xl font-bold tabular-nums">
+                {formatCurrency(invoice.total_amount)}
+              </p>
             </div>
-            <div className="space-y-2">
-              <label htmlFor="inv_number" className="label-text">
-                Invoice Number
-              </label>
-              {isEditing ? (
-                <input
-                  id="inv_number"
-                  value={header.inv_number}
-                  onChange={(e) => setHeader((h) => ({ ...h, inv_number: e.target.value }))}
-                  className="input-field"
-                  maxLength={30}
-                />
-              ) : (
-                <p className="font-medium">{invoice.inv_number ?? "-"}</p>
-              )}
+            <div>
+              <p className="text-xs text-muted-foreground">Balance</p>
+              <p
+                className={cn(
+                  "text-xl font-semibold tabular-nums",
+                  invoice.balance > 0 ? "text-destructive" : "text-muted-foreground"
+                )}
+              >
+                {formatCurrency(invoice.balance)}
+              </p>
             </div>
-            <div className="space-y-2">
-              <label htmlFor="inv_date" className="label-text">
-                Invoice Date
-              </label>
-              {isEditing ? (
-                <input
-                  id="inv_date"
-                  type="date"
-                  value={header.inv_date}
-                  onChange={(e) => setHeader((h) => ({ ...h, inv_date: e.target.value }))}
-                  className="input-field"
-                />
-              ) : (
-                <p className="font-medium">
-                  {invoice.inv_date ? formatDate(invoice.inv_date) : "-"}
-                </p>
-              )}
+            <div className="border-t pt-3">
+              <p className="text-xs text-muted-foreground">Created</p>
+              <p className="text-sm">{formatDate(invoice.created_at, "dd/MM/yyyy HH:mm")}</p>
             </div>
-            <div className="space-y-2">
-              <label htmlFor="due_date" className="label-text">
-                Due Date
-              </label>
-              {isEditing ? (
-                <input
-                  id="due_date"
-                  type="date"
-                  value={header.due_date}
-                  onChange={(e) => setHeader((h) => ({ ...h, due_date: e.target.value }))}
-                  className="input-field"
-                />
-              ) : (
-                <p className="font-medium">
-                  {invoice.due_date ? formatDate(invoice.due_date) : "-"}
-                </p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="vat_type" className="label-text">
-                VAT Type
-              </label>
-              {isEditing ? (
-                <select
-                  id="vat_type"
-                  value={header.vat_type}
-                  onChange={(e) => setHeader((h) => ({ ...h, vat_type: e.target.value }))}
-                  className="input-field"
-                >
-                  <option value="none">No VAT</option>
-                  <option value="exclusive">Exclusive</option>
-                  <option value="inclusive">Inclusive</option>
-                  <option value="exempt">Exempt</option>
-                </select>
-              ) : (
-                <p className="font-medium">{invoice.vat_type}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="ap_type_code" className="label-text">AP Type</label>
-              {isEditing ? (
-                <input
-                  id="ap_type_code"
-                  value={header.ap_type_code}
-                  onChange={(e) => setHeader((h) => ({ ...h, ap_type_code: e.target.value }))}
-                  className="input-field"
-                  maxLength={5}
-                />
-              ) : (
-                <p className="font-medium">{invoice.ap_type_code ?? "-"}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="wht_code" className="label-text">WHT Code</label>
-              {isEditing ? (
-                <input
-                  id="wht_code"
-                  value={header.wht_code}
-                  onChange={(e) => setHeader((h) => ({ ...h, wht_code: e.target.value }))}
-                  className="input-field"
-                  maxLength={5}
-                />
-              ) : (
-                <p className="font-medium">{invoice.wht_code ?? "-"}</p>
-              )}
+            <div>
+              <p className="text-xs text-muted-foreground">Last Updated</p>
+              <p className="text-sm">{formatDate(invoice.updated_at, "dd/MM/yyyy HH:mm")}</p>
             </div>
           </div>
-          {isEditing && (
-            <div className="mt-4 space-y-2">
-              <label htmlFor="remark" className="label-text">Remark</label>
-              <textarea
-                id="remark"
-                value={header.remark}
-                onChange={(e) => setHeader((h) => ({ ...h, remark: e.target.value }))}
-                className="input-field min-h-[80px]"
-                rows={2}
-              />
-            </div>
-          )}
-          {!isEditing && invoice.remark && (
-            <div className="mt-4">
-              <span className="label-text text-muted-foreground">Remark</span>
-              <p className="mt-1">{invoice.remark}</p>
-            </div>
-          )}
         </div>
 
+        {/* Line Items */}
         <div className="card">
-          <div className="flex items-center justify-between border-b p-4">
-            <h2 className="text-lg font-semibold">Detail Lines</h2>
+          <div className="flex items-center justify-between border-b px-6 py-4">
+            <h2 className="font-semibold">Detail Lines</h2>
             {isEditing && (
               <button type="button" onClick={addLine} className="btn-outline text-sm">
                 <Plus className="h-4 w-4" />
@@ -455,152 +525,67 @@ export default function VoucherDetailPage({ params }: { params: Promise<{ id: st
               <tbody>
                 {lines.map((line, index) => (
                   <tr key={line.id ?? index}>
-                    <td className="text-center text-muted-foreground">{line.line_no}</td>
-                    <td>
-                      {isEditing ? (
-                        <input
-                          value={line.gl_account}
-                          onChange={(e) => updateLine(index, "gl_account", e.target.value)}
-                          className="input-field"
-                          placeholder="GL Account"
-                          maxLength={20}
-                        />
-                      ) : (
-                        line.gl_account || "-"
-                      )}
+                    <td className="text-center text-muted-foreground">
+                      {line.line_no}
                     </td>
-                    <td>
-                      {isEditing ? (
-                        <input
-                          value={line.description}
-                          onChange={(e) => updateLine(index, "description", e.target.value)}
-                          className="input-field"
-                          placeholder="Description"
-                          maxLength={200}
-                        />
-                      ) : (
-                        line.description || "-"
-                      )}
-                    </td>
-                    <td>
-                      {isEditing ? (
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={line.dr_amount || ""}
-                          onChange={(e) =>
-                            updateLine(index, "dr_amount", parseFloat(e.target.value) || 0)
-                          }
-                          className="input-field text-right"
-                          placeholder="0.00"
-                        />
-                      ) : (
-                        <span className="font-mono">{formatCurrency(line.dr_amount)}</span>
-                      )}
-                    </td>
-                    <td>
-                      {isEditing ? (
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={line.cr_amount || ""}
-                          onChange={(e) =>
-                            updateLine(index, "cr_amount", parseFloat(e.target.value) || 0)
-                          }
-                          className="input-field text-right"
-                          placeholder="0.00"
-                        />
-                      ) : (
-                        <span className="font-mono">{formatCurrency(line.cr_amount)}</span>
-                      )}
-                    </td>
-                    {isEditing && (
-                      <td>
-                        {lines.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeLine(index)}
-                            className="btn-ghost text-destructive p-1"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        )}
-                      </td>
+                    {isEditing ? (
+                      <>
+                        <td>
+                          <input value={line.gl_account} onChange={(e) => updateLine(index, "gl_account", e.target.value)} className="input-field" placeholder="GL Account" maxLength={20} />
+                        </td>
+                        <td>
+                          <input value={line.description} onChange={(e) => updateLine(index, "description", e.target.value)} className="input-field" placeholder="Description" maxLength={200} />
+                        </td>
+                        <td>
+                          <input type="number" step="0.01" value={line.dr_amount || ""} onChange={(e) => updateLine(index, "dr_amount", parseFloat(e.target.value) || 0)} className="input-field text-right" placeholder="0.00" />
+                        </td>
+                        <td>
+                          <input type="number" step="0.01" value={line.cr_amount || ""} onChange={(e) => updateLine(index, "cr_amount", parseFloat(e.target.value) || 0)} className="input-field text-right" placeholder="0.00" />
+                        </td>
+                        <td>
+                          {lines.length > 1 && (
+                            <button type="button" onClick={() => removeLine(index)} className="btn-ghost text-destructive p-1">
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="font-medium">{line.gl_account || "—"}</td>
+                        <td className="text-muted-foreground">{line.description || "—"}</td>
+                        <td className="text-right tabular-nums">{formatCurrency(line.dr_amount)}</td>
+                        <td className="text-right tabular-nums">{formatCurrency(line.cr_amount)}</td>
+                      </>
                     )}
                   </tr>
                 ))}
               </tbody>
               <tfoot>
-                <tr className="border-t-2 font-semibold">
-                  <td colSpan={3} className="text-right">Total</td>
-                  <td className="text-right font-mono">{formatCurrency(totalDr)}</td>
-                  <td className="text-right font-mono">{formatCurrency(totalCr)}</td>
+                <tr className="border-t-2 font-semibold bg-muted/50">
+                  <td colSpan={isEditing ? 3 : 3} className="text-right pr-4">
+                    Total
+                  </td>
+                  <td className={cn("text-right tabular-nums", totalDr > 0 && "text-success")}>
+                    {formatCurrency(totalDr)}
+                  </td>
+                  <td className={cn("text-right tabular-nums", totalCr > 0 && "text-success")}>
+                    {formatCurrency(totalCr)}
+                  </td>
                   {isEditing && <td />}
                 </tr>
               </tfoot>
             </table>
           </div>
           {isEditing && Math.abs(totalDr - totalCr) > 0.01 && (
-            <div className="border-t bg-destructive/5 px-4 py-2 text-sm text-destructive">
-              Debit and Credit totals must be equal (difference:{" "}
-              {formatCurrency(Math.abs(totalDr - totalCr))})
+            <div className="border-t bg-destructive/5 px-6 py-3 text-sm text-destructive">
+              Debit and Credit totals must be equal. Difference:{" "}
+              {formatCurrency(Math.abs(totalDr - totalCr))}
             </div>
           )}
         </div>
 
-        {!isEditing && (
-          <div className="card p-6">
-            <h2 className="mb-4 text-lg font-semibold">Summary</h2>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div>
-                <span className="label-text text-muted-foreground">Total Amount</span>
-                <p className="mt-1 font-mono text-lg font-medium">
-                  {formatCurrency(invoice.total_amount)}
-                </p>
-              </div>
-              <div>
-                <span className="label-text text-muted-foreground">Balance</span>
-                <p className="mt-1 font-mono text-lg font-medium">
-                  {formatCurrency(invoice.balance)}
-                </p>
-              </div>
-              <div>
-                <span className="label-text text-muted-foreground">Status</span>
-                <p className="mt-1">
-                  <span
-                    className={cn(
-                      "badge",
-                      statusColorMap[invoice.status] ?? "badge-info"
-                    )}
-                  >
-                    {invoice.status.replace(/_/g, " ")}
-                  </span>
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {!isEditing && (
-          <div className="card p-6">
-            <h2 className="mb-4 text-lg font-semibold">Audit Info</h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <span className="label-text text-muted-foreground">Created</span>
-                <p className="mt-1 text-sm">
-                  {formatDate(invoice.created_at, "dd/MM/yyyy HH:mm")}
-                </p>
-              </div>
-              <div>
-                <span className="label-text text-muted-foreground">Last Updated</span>
-                <p className="mt-1 text-sm">
-                  {formatDate(invoice.updated_at, "dd/MM/yyyy HH:mm")}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
+        {/* Edit actions */}
         {isEditing && (
           <div className="flex justify-end gap-3">
             <Link href="/postings" className="btn-outline">
@@ -621,42 +606,38 @@ export default function VoucherDetailPage({ params }: { params: Promise<{ id: st
             </button>
           </div>
         )}
-
-        {!isEditing && invoice && !["cancelled", "voided", "paid"].includes(invoice.status) && (
-          <div className="flex justify-end gap-3">
-            <Link href="/postings" className="btn-outline">
-              Back
-            </Link>
-            <button
-              type="button"
-              onClick={async () => {
-                const reason = prompt("Enter reason for cancellation:");
-                if (!reason?.trim()) return;
-                setIsSaving(true);
-                setError(null);
-                try {
-                  const { cancelVoucher } = await import("@/modules/posting/posting.actions");
-                  const result = await cancelVoucher(id, reason);
-                  if (result.success) {
-                    router.push("/postings");
-                  } else {
-                    setError(result.error ?? "Failed to cancel voucher");
-                  }
-                } catch (err) {
-                  setError(err instanceof Error ? err.message : "Failed to cancel voucher");
-                } finally {
-                  setIsSaving(false);
-                }
-              }}
-              className="btn-destructive"
-              disabled={isSaving}
-            >
-              {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
-              Cancel Voucher
-            </button>
-          </div>
-        )}
       </form>
+    </div>
+  );
+}
+
+function InfoItem({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number | null | undefined;
+}) {
+  const display = value != null && value !== "" ? String(value) : "—";
+  return (
+    <div>
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd className="text-sm font-medium">{display}</dd>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label className="label-text">{label}</label>
+      {children}
     </div>
   );
 }

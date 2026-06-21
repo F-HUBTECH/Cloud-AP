@@ -468,7 +468,7 @@ export default function DepositApplicationsPage() {
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Remaining</p>
-                    <p className="font-mono font-semibold text-green-600">{formatCurrency(selectedDepositData.remainingAmount)}</p>
+                    <p className="font-mono font-semibold text-success">{formatCurrency(selectedDepositData.remainingAmount)}</p>
                   </div>
                 </div>
               </div>
@@ -536,7 +536,7 @@ export default function DepositApplicationsPage() {
                 <div className="flex items-center justify-between rounded-md border p-3">
                   <div className="text-sm">
                     <span className="text-muted-foreground">Total to Apply:</span>{" "}
-                    <span className={cn("font-mono font-semibold", totalToApply > (selectedDepositData?.remainingAmount ?? 0) ? "text-red-600" : "text-green-600")}>
+                    <span className={cn("font-mono font-semibold", totalToApply > (selectedDepositData?.remainingAmount ?? 0) ? "text-danger" : "text-success")}>
                       {formatCurrency(totalToApply)}
                     </span>
                     {selectedDepositData && (

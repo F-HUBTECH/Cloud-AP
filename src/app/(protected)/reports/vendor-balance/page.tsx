@@ -102,7 +102,7 @@ export default function VendorBalancePage() {
                     <td className="text-right font-mono">{formatCurrency(v.open_amount)}</td>
                     <td className="text-right font-mono">{formatCurrency(v.total_amount)}</td>
                     <td className="text-right font-mono">{formatCurrency(v.total_payment)}</td>
-                    <td className={`text-right font-mono font-semibold ${v.balance >= 0 ? "text-green-600" : "text-red-600"}`}>
+                    <td className={`text-right font-mono font-semibold ${v.balance >= 0 ? "text-success" : "text-danger"}`}>
                       {formatCurrency(v.balance)}
                     </td>
                   </tr>
@@ -116,7 +116,7 @@ export default function VendorBalancePage() {
                   <td className="text-right font-mono">{formatCurrency(totals.open)}</td>
                   <td className="text-right font-mono">{formatCurrency(totals.amount)}</td>
                   <td className="text-right font-mono">{formatCurrency(totals.payment)}</td>
-                  <td className={`text-right font-mono ${totals.balance >= 0 ? "text-green-600" : "text-red-600"}`}>
+                  <td className={`text-right font-mono ${totals.balance >= 0 ? "text-success" : "text-danger"}`}>
                     {formatCurrency(totals.balance)}
                   </td>
                 </tr>

@@ -420,7 +420,7 @@ export default function BankReconciliationPage() {
                         {!c.cancelled && !isCleared && (
                           <button
                             onClick={() => setReconcileId(c.id)}
-                            className="btn-ghost gap-1 text-sm text-green-600"
+                            className="btn-ghost gap-1 text-sm text-success"
                             title="Mark as reconciled"
                           >
                             <CheckCircle className="h-4 w-4" />

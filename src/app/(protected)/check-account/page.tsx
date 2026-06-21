@@ -286,22 +286,22 @@ export default function CheckAccountPage() {
 
       {hasRun && (
         <>
-          <div className={cn("card p-6", isBalanced ? "border-green-300 bg-green-50" : "border-red-300 bg-red-50")}>
+          <div className={cn("card p-6", isBalanced ? "border-green-300 bg-success-bg" : "border-red-300 bg-red-50")}>
             <div className="flex items-center gap-3">
               {isBalanced ? (
                 <>
-                  <CheckCircle className="h-8 w-8 text-green-600" />
+                  <CheckCircle className="h-8 w-8 text-success" />
                   <div>
-                    <h2 className="text-xl font-bold text-green-800">Balanced</h2>
-                    <p className="text-green-700">GL control account matches AP sub-ledger.</p>
+                    <h2 className="text-xl font-bold text-success">Balanced</h2>
+                    <p className="text-success">GL control account matches AP sub-ledger.</p>
                   </div>
                 </>
               ) : (
                 <>
-                  <AlertTriangle className="h-8 w-8 text-red-600" />
+                  <AlertTriangle className="h-8 w-8 text-danger" />
                   <div>
-                    <h2 className="text-xl font-bold text-red-800">Out of Balance</h2>
-                    <p className="text-red-700">
+                    <h2 className="text-xl font-bold text-danger">Out of Balance</h2>
+                    <p className="text-danger">
                       Difference: {formatCurrency(Math.abs(difference))} (GL: {formatCurrency(glTotal)}, AP: {formatCurrency(apTotal)})
                     </p>
                   </div>
@@ -319,7 +319,7 @@ export default function CheckAccountPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Difference</p>
-                <p className={cn("text-2xl font-bold font-mono", Math.abs(difference) < 0.01 ? "text-green-600" : "text-red-600")}>
+                <p className={cn("text-2xl font-bold font-mono", Math.abs(difference) < 0.01 ? "text-success" : "text-danger")}>
                   {formatCurrency(difference)}
                 </p>
               </div>
@@ -350,7 +350,7 @@ export default function CheckAccountPage() {
                           <td>{row.name}</td>
                           <td className="text-right font-mono">{formatCurrency(row.drTotal)}</td>
                           <td className="text-right font-mono">{formatCurrency(row.crTotal)}</td>
-                          <td className={cn("text-right font-mono font-semibold", row.balance >= 0 ? "text-green-600" : "text-red-600")}>
+                          <td className={cn("text-right font-mono font-semibold", row.balance >= 0 ? "text-success" : "text-danger")}>
                             {formatCurrency(row.balance)}
                           </td>
                         </tr>
@@ -363,7 +363,7 @@ export default function CheckAccountPage() {
                         <td colSpan={2} className="text-right">Total</td>
                         <td className="text-right font-mono">{formatCurrency(totalGLDr)}</td>
                         <td className="text-right font-mono">{formatCurrency(totalGLCr)}</td>
-                        <td className={cn("text-right font-mono", glTotal >= 0 ? "text-green-600" : "text-red-600")}>
+                        <td className={cn("text-right font-mono", glTotal >= 0 ? "text-success" : "text-danger")}>
                           {formatCurrency(glTotal)}
                         </td>
                       </tr>
@@ -398,7 +398,7 @@ export default function CheckAccountPage() {
                           <td className="text-right font-mono">{formatCurrency(row.openAmount)}</td>
                           <td className="text-right font-mono">{formatCurrency(row.totalAmount)}</td>
                           <td className="text-right font-mono">{formatCurrency(row.totalPayment)}</td>
-                          <td className={cn("text-right font-mono font-semibold", row.balance >= 0 ? "text-green-600" : "text-red-600")}>
+                          <td className={cn("text-right font-mono font-semibold", row.balance >= 0 ? "text-success" : "text-danger")}>
                             {formatCurrency(row.balance)}
                           </td>
                         </tr>
@@ -418,7 +418,7 @@ export default function CheckAccountPage() {
                         <td className="text-right font-mono">
                           {formatCurrency(vendorBalances.reduce((s, r) => s + r.totalPayment, 0))}
                         </td>
-                        <td className={cn("text-right font-mono", apTotal >= 0 ? "text-green-600" : "text-red-600")}>
+                        <td className={cn("text-right font-mono", apTotal >= 0 ? "text-success" : "text-danger")}>
                           {formatCurrency(apTotal)}
                         </td>
                       </tr>

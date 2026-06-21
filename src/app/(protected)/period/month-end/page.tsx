@@ -165,17 +165,17 @@ export default function MonthEndPage() {
       </div>
 
       {message && (
-        <div className={cn("flex items-center gap-2 rounded-md p-3 text-sm", message.type === "success" ? "bg-green-50 text-green-700" : "bg-destructive/10 text-destructive")}>
+        <div className={cn("flex items-center gap-2 rounded-md p-3 text-sm", message.type === "success" ? "bg-success-bg text-success" : "bg-destructive/10 text-destructive")}>
           {message.type === "success" ? <CheckCircle className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
           {message.text}
         </div>
       )}
 
       {closeResult && (
-        <div className="card p-4 bg-green-50 border-green-200">
-          <h3 className="font-semibold text-green-800">Closing Results</h3>
-          <p className="text-sm text-green-700">Vendors processed: {closeResult.vendorsProcessed}</p>
-          <p className="text-sm text-green-700">Monthly balances saved: {closeResult.balancesCreated}</p>
+        <div className="card p-4 bg-success-bg border-green-200">
+          <h3 className="font-semibold text-success">Closing Results</h3>
+          <p className="text-sm text-success">Vendors processed: {closeResult.vendorsProcessed}</p>
+          <p className="text-sm text-success">Monthly balances saved: {closeResult.balancesCreated}</p>
         </div>
       )}
 

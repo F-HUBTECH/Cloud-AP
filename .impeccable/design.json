@@ -1,0 +1,336 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-21T14:00:00.000Z",
+  "title": "Design System: TKAP — Accounts Payable",
+  "extensions": {
+    "colorMeta": {
+      "ledger-blue": {
+        "role": "primary",
+        "displayName": "Ledger Blue",
+        "canonical": "oklch(53% 0.22 260)",
+        "tonalRamp": [
+          "oklch(15% 0.05 260)",
+          "oklch(25% 0.10 260)",
+          "oklch(35% 0.15 260)",
+          "oklch(45% 0.20 260)",
+          "oklch(55% 0.22 260)",
+          "oklch(65% 0.18 260)",
+          "oklch(80% 0.10 260)",
+          "oklch(92% 0.04 260)"
+        ]
+      },
+      "ink-black": {
+        "role": "neutral",
+        "displayName": "Ink Black",
+        "canonical": "oklch(10% 0.02 260)",
+        "tonalRamp": [
+          "oklch(5% 0.01 260)",
+          "oklch(10% 0.02 260)",
+          "oklch(20% 0.03 260)",
+          "oklch(30% 0.03 260)",
+          "oklch(40% 0.03 260)",
+          "oklch(55% 0.02 260)",
+          "oklch(70% 0.01 260)",
+          "oklch(85% 0.01 260)"
+        ]
+      },
+      "paper-white": {
+        "role": "neutral",
+        "displayName": "Paper White",
+        "canonical": "oklch(100% 0 0)",
+        "tonalRamp": [
+          "oklch(88% 0 0)",
+          "oklch(91% 0 0)",
+          "oklch(94% 0 0)",
+          "oklch(96% 0 0)",
+          "oklch(98% 0 0)",
+          "oklch(99% 0 0)",
+          "oklch(100% 0 0)",
+          "oklch(100% 0 0)"
+        ]
+      },
+      "frost-gray": {
+        "role": "neutral",
+        "displayName": "Frost Gray",
+        "canonical": "oklch(96% 0.01 250)",
+        "tonalRamp": [
+          "oklch(80% 0.02 250)",
+          "oklch(85% 0.02 250)",
+          "oklch(90% 0.01 250)",
+          "oklch(93% 0.01 250)",
+          "oklch(96% 0.01 250)",
+          "oklch(97% 0.005 250)",
+          "oklch(98% 0.003 250)",
+          "oklch(99% 0.001 250)"
+        ]
+      },
+      "slate-muted": {
+        "role": "neutral",
+        "displayName": "Slate Muted",
+        "canonical": "oklch(55% 0.02 250)",
+        "tonalRamp": [
+          "oklch(30% 0.01 250)",
+          "oklch(40% 0.02 250)",
+          "oklch(48% 0.02 250)",
+          "oklch(55% 0.02 250)",
+          "oklch(62% 0.02 250)",
+          "oklch(72% 0.01 250)",
+          "oklch(82% 0.01 250)",
+          "oklch(90% 0.005 250)"
+        ]
+      },
+      "hairline-gray": {
+        "role": "neutral",
+        "displayName": "Hairline Gray",
+        "canonical": "oklch(91% 0.01 250)",
+        "tonalRamp": [
+          "oklch(82% 0.01 250)",
+          "oklch(85% 0.01 250)",
+          "oklch(88% 0.01 250)",
+          "oklch(91% 0.01 250)",
+          "oklch(93% 0.005 250)",
+          "oklch(95% 0.003 250)",
+          "oklch(97% 0.001 250)",
+          "oklch(98% 0 0)"
+        ]
+      },
+      "destructive-red": {
+        "role": "semantic",
+        "displayName": "Destructive Red",
+        "canonical": "oklch(55% 0.22 25)",
+        "tonalRamp": [
+          "oklch(20% 0.08 25)",
+          "oklch(30% 0.13 25)",
+          "oklch(40% 0.18 25)",
+          "oklch(50% 0.22 25)",
+          "oklch(60% 0.20 25)",
+          "oklch(72% 0.14 25)",
+          "oklch(85% 0.06 25)",
+          "oklch(94% 0.02 25)"
+        ]
+      },
+      "off-white": {
+        "role": "neutral",
+        "displayName": "Off White",
+        "canonical": "oklch(98% 0.003 250)",
+        "tonalRamp": [
+          "oklch(90% 0.005 250)",
+          "oklch(93% 0.005 250)",
+          "oklch(95% 0.003 250)",
+          "oklch(97% 0.003 250)",
+          "oklch(98% 0.003 250)",
+          "oklch(99% 0.001 250)",
+          "oklch(100% 0 0)",
+          "oklch(100% 0 0)"
+        ]
+      },
+      "dark-slate": {
+        "role": "neutral",
+        "displayName": "Dark Slate",
+        "canonical": "oklch(20% 0.02 250)",
+        "tonalRamp": [
+          "oklch(10% 0.01 250)",
+          "oklch(16% 0.02 250)",
+          "oklch(22% 0.02 250)",
+          "oklch(30% 0.02 250)",
+          "oklch(40% 0.02 250)",
+          "oklch(52% 0.02 250)",
+          "oklch(65% 0.01 250)",
+          "oklch(78% 0.01 250)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "body": {
+        "displayName": "Body",
+        "purpose": "ข้อความทั่วไป, ตาราง, ฟอร์ม fields — อ่านนาน ๆ ได้"
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "ป้ายฟอร์ม, ปุ่ม, sidebar links, table headers"
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "หัวข้อหน้าหลัก — ใช้ได้หนึ่งครั้งต่อหน้า"
+      },
+      "badge": {
+        "displayName": "Badge",
+        "purpose": "Status badges — เล็ก กระชับ อ่านเร็ว"
+      }
+    },
+    "shadows": [
+      {
+        "name": "dropdown",
+        "value": "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1)",
+        "purpose": "Dropdown menu และ popover — เบา พอให้รู้ว่าลอย"
+      },
+      {
+        "name": "card",
+        "value": "0 1px 2px 0 rgba(0,0,0,0.05)",
+        "purpose": "Card container — เบามาก เกือบไม่รู้สึก"
+      }
+    ],
+    "motion": [
+      {
+        "name": "sidebar-collapse",
+        "value": "200ms ease-out",
+        "purpose": "Sidebar expand/collapse — ยกเลิกถ้า prefers-reduced-motion"
+      },
+      {
+        "name": "instant",
+        "value": "0ms",
+        "purpose": "Default for all state changes — no transition"
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Action หลักของหน้านั้น ๆ — ใช้มากสุด 1 ปุ่มต่อหน้า",
+      "html": "<button class=\"ds-btn-primary\">Save Changes</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #2563eb; color: #f8fafc; padding: 8px 16px; border: none; border-radius: 6px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 0.875rem; font-weight: 500; line-height: 1.25rem; cursor: pointer; } .ds-btn-primary:hover { opacity: 0.9; } .ds-btn-primary:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Action รอง — ใช้เมื่อมี primary อยู่แล้ว",
+      "html": "<button class=\"ds-btn-secondary\">Cancel</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #f1f5f9; color: #0f172a; padding: 8px 16px; border: none; border-radius: 6px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 0.875rem; font-weight: 500; line-height: 1.25rem; cursor: pointer; } .ds-btn-secondary:hover { opacity: 0.8; } .ds-btn-secondary:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; } .ds-btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "ใช้เมื่อ primary/secondary แย่งความสนใจกัน — มีขอบแต่พื้นโปร่ง",
+      "html": "<button class=\"ds-btn-outline\">Export</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #ffffff; color: #020817; padding: 8px 16px; border: 1px solid #e2e8f0; border-radius: 6px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 0.875rem; font-weight: 500; line-height: 1.25rem; cursor: pointer; } .ds-btn-outline:hover { background: #f1f5f9; } .ds-btn-outline:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "โปร่งใส — sidebar actions, row actions ในตาราง",
+      "html": "<button class=\"ds-btn-ghost\">Edit</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: transparent; color: #020817; padding: 8px 16px; border: none; border-radius: 6px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 0.875rem; font-weight: 500; line-height: 1.25rem; cursor: pointer; } .ds-btn-ghost:hover { background: #f1f5f9; } .ds-btn-ghost:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }"
+    },
+    {
+      "name": "Destructive Button",
+      "kind": "button",
+      "refersTo": "button-destructive",
+      "description": "เฉพาะ delete/void/cancel ที่แก้ไขไม่ได้",
+      "html": "<button class=\"ds-btn-destructive\">Delete</button>",
+      "css": ".ds-btn-destructive { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #ef4444; color: #f8fafc; padding: 8px 16px; border: none; border-radius: 6px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 0.875rem; font-weight: 500; line-height: 1.25rem; cursor: pointer; } .ds-btn-destructive:hover { opacity: 0.9; } .ds-btn-destructive:focus-visible { outline: 2px solid #ef4444; outline-offset: 2px; } .ds-btn-destructive:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Text input มาตรฐาน — ใช้กับทุกฟอร์ม",
+      "html": "<input class=\"ds-input-field\" type=\"text\" placeholder=\"Enter value...\" />",
+      "css": ".ds-input-field { display: flex; height: 40px; width: 100%; background: #ffffff; color: #020817; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 0.875rem; line-height: 1.25rem; } .ds-input-field:focus { outline: none; box-shadow: 0 0 0 2px #2563eb; border-color: transparent; } .ds-input-field:disabled { opacity: 0.5; cursor: not-allowed; } .ds-input-field::placeholder { color: #64748b; }"
+    },
+    {
+      "name": "Success Badge",
+      "kind": "chip",
+      "refersTo": "badge-success",
+      "description": "แสดงสถานะสำเร็จ — approved, paid, active",
+      "html": "<span class=\"ds-badge-success\">Approved</span>",
+      "css": ".ds-badge-success { display: inline-flex; align-items: center; padding: 2px 10px; border: 1px solid #bbf7d0; border-radius: 9999px; background: #f0fdf4; color: #15803d; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 0.75rem; font-weight: 600; line-height: 1rem; }"
+    },
+    {
+      "name": "Warning Badge",
+      "kind": "chip",
+      "refersTo": "badge-warning",
+      "description": "แสดงสถานะรอดำเนินการ — pending, draft",
+      "html": "<span class=\"ds-badge-warning\">Pending</span>",
+      "css": ".ds-badge-warning { display: inline-flex; align-items: center; padding: 2px 10px; border: 1px solid #fef08a; border-radius: 9999px; background: #fefce8; color: #a16207; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 0.75rem; font-weight: 600; line-height: 1rem; }"
+    },
+    {
+      "name": "Danger Badge",
+      "kind": "chip",
+      "refersTo": "badge-danger",
+      "description": "แสดงสถานะปฏิเสธ/ยกเลิก — rejected, voided, overdue",
+      "html": "<span class=\"ds-badge-danger\">Rejected</span>",
+      "css": ".ds-badge-danger { display: inline-flex; align-items: center; padding: 2px 10px; border: 1px solid #fecaca; border-radius: 9999px; background: #fef2f2; color: #b91c1c; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 0.75rem; font-weight: 600; line-height: 1rem; }"
+    },
+    {
+      "name": "Sidebar Link Active",
+      "kind": "nav",
+      "refersTo": "sidebar-link-active",
+      "description": "Navigation link ในสถานะ active — หน้าปัจจุบัน",
+      "html": "<a class=\"ds-sidebar-link-active\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect width=\"7\" height=\"9\" x=\"3\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"5\" x=\"14\" y=\"10\" rx=\"1\"/></svg><span>Dashboard</span></a>",
+      "css": ".ds-sidebar-link-active { display: flex; align-items: center; gap: 12px; background: #2563eb; color: #f8fafc; padding: 8px 12px; border-radius: 8px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 0.875rem; font-weight: 500; line-height: 1.25rem; text-decoration: none; }"
+    },
+    {
+      "name": "Card Container",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "ภาชนะมาตรฐาน — ฟอร์ม login, detail sections, empty states",
+      "html": "<div class=\"ds-card\"><p style=\"color:#64748b;font-size:0.875rem\">Card content goes here</p></div>",
+      "css": ".ds-card { background: #ffffff; color: #020817; padding: 24px; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Clear Desk",
+    "overview": "โต๊ะทำงานของนักบัญชีที่จัดระเบียบเรียบร้อย — กระดาษวางตรง กองเอกสารแยกชัด ปากกาอยู่ในที่ของมัน เมื่อนั่งลงแล้วพร้อมทำงานทันที ไม่มีอะไรเกะกะสายตา ไม่ต้องค้นหาอะไร\n\nTKAP คือโต๊ะตัวนั้นในรูปแบบดิจิทัล ทุก pixel มีหน้าที่ ทุก interaction ตอบสนองทันที ข้อมูลอยู่ตรงหน้าโดยไม่ต้องขุดคุ้ย ระบบไม่เรียกร้องความสนใจ — มันเพียงแค่อยู่ตรงนั้น พร้อม รอให้ผู้ใช้ทำงานของตัวเอง\n\nมันไม่ใช่แอปที่สวยเพื่ออวดดีไซน์ และไม่ใช่ ERP ที่อัดข้อมูลจนหายใจไม่ออก มันคือพื้นที่ทำงานของนักบัญชี — สะอาด เงียบ ไว้ใจได้",
+    "keyCharacteristics": [
+      "องค์ประกอบทุกชิ้นมีหน้าที่ — ถ้าเอาออกแล้วงานยังเดินได้ แสดงว่ามันไม่จำเป็น",
+      "ปฏิสัมพันธ์ทันที ไม่มี animation มาขวาง — กดปุ๊บ ติดปั๊บ",
+      "ใช้สีพื้น (tonal layering) แทน shadow ในการแบ่ง layer — เรียบ ไม่มีอะไรลอย",
+      "ข้อมูลมาก่อนเสมอ — typography ชัดเจน อ่านง่าย ตัวเลขอยู่ตรงกลางของทุกหน้า"
+    ],
+    "rules": [
+      {
+        "name": "The One Blue Rule",
+        "body": "Ledger Blue ใช้กับ ≤10% ของพื้นที่หน้าจอใด ๆ จุดเด่นของมันคือความหายาก ถ้าเห็นสีฟ้าเต็มหน้า แสดงว่ามีอะไรผิดปกติ",
+        "section": "colors"
+      },
+      {
+        "name": "The Flat Gray Rule",
+        "body": "Frost Gray, Hairline Gray, และ Slate Muted ใช้แทน shadow ในการแบ่ง layer — สีที่ต่างกันเล็กน้อยสร้างลำดับชั้นโดยไม่ต้องใช้เงา",
+        "section": "colors"
+      },
+      {
+        "name": "The One Family Rule",
+        "body": "ใช้ system font เท่านั้นทั้งระบบ — ไม่มี font คู่ที่สอง ไม่มี display font ไม่มี mono font การตัดสินใจนี้ทำให้ UI สะอาดขึ้น โหลดเร็วขึ้น และรักษาความรู้สึก \"เครื่องมือ\" มากกว่า \"นิตยสาร\"",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-By-Default Rule",
+        "body": "พื้นผิวทั้งหมดแบนที่ rest — shadow ปรากฏเฉพาะกับองค์ประกอบที่ลอยออกจาก layout flow (dropdown, popover) เท่านั้น",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "ใช้ Ledger Blue เฉพาะกับ primary action และ active states — หนึ่งจุดเด่นต่อหน้าจอ",
+      "ใช้ Frost Gray background เพื่อแยกส่วน header, sidebar, และ table headers จากเนื้อหาหลัก",
+      "ใช้ system font stack (system-ui) เท่านั้น — ไม่ import ฟอนต์เพิ่มนอกจาก Inter (ที่โหลดไว้แล้วสำหรับ --font-inter)",
+      "รักษาความกว้าง content ≤65-75ch สำหรับหน้า text-heavy",
+      "ใช้ tonal layering (Frost Gray / Paper White / Off White) แทน box-shadow ในการสร้างลำดับชั้น",
+      "ใช้ Lucide Icons ขนาด 16-20px — หนึ่งชุด, หนึ่งสไตล์",
+      "ใส่ label ทุก input field — ใช้ label-text component เสมอ",
+      "ใช้เลขทศนิยม 2 ตำแหน่ง, จัดชิดขวาสำหรับคอลัมน์ตัวเลขในตาราง"
+    ],
+    "donts": [
+      "ใช้สีฟ้าเป็นพื้นหลังส่วนใด ๆ ของหน้า — Ledger Blue ใช้เฉพาะ accent ≤10%",
+      "ใช้ border-left หรือ border-right หนาเกิน 1px เป็นแถบสี — ใช้ background tint หรือ icon/ตัวเลขนำแทน",
+      "ใส่ animation ที่ใช้เวลานานกว่า 200ms — ระบบนี้คือเครื่องมือ ไม่ใช่ภาพยนตร์",
+      "ใช้ gradient, glassmorphism, หรือ backdrop-filter: blur() — ดูเหมือน marketing landing page ไม่ใช่เครื่องมือการเงิน",
+      "ใช้ background-clip: text กับ gradient — ต้องห้ามเด็ดขาด",
+      "ใส่ข้อมูลแน่นเกินไป — ถ้าต้องการพื้นที่มาก ใช้ pagination หรือ tab แทนการยัดทุกอย่างในหน้าเดียว",
+      "ใช้ฟอนต์มากกว่า 1 family — system font เท่านั้น",
+      "ซ่อน label ของ input fields — accessibility พื้นฐาน ต้องอ่านออกเสมอ",
+      "ใช้เงาหนัก (shadow-md, shadow-lg, shadow-xl) — ผิดหลัก Flat-By-Default",
+      "ใช้สีนอกจาก palette นี้ยกเว้นมีเหตุผลชัดเจน — ถ้าต้องเพิ่มสี semantic ใหม่ ต้องเพิ่มเป็น token ก่อน"
+    ]
+  }
+}

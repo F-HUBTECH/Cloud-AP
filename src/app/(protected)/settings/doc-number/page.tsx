@@ -175,7 +175,7 @@ export default function DocNumberPage() {
       )}
 
       {success && (
-        <div className="rounded-md bg-emerald-500/10 p-3 text-sm text-emerald-600">
+        <div className="rounded-md bg-success/10 p-3 text-sm text-success">
           Configuration saved successfully.
         </div>
       )}

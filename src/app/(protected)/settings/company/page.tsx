@@ -234,7 +234,7 @@ export default function CompanySettingsPage() {
         </div>
       )}
       {success && (
-        <div className="rounded-md bg-green-500/10 p-3 text-sm text-green-600">
+        <div className="rounded-md bg-success-bg0/10 p-3 text-sm text-success">
           {success}
         </div>
       )}

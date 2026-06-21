@@ -1,5 +1,5 @@
 import { createServerClient } from "@/lib/supabase/server";
-import { DashboardRealtime } from "@/components/dashboard/dashboard-realtime";
+import { DashboardContent } from "@/components/dashboard/dashboard-content";
 
 export const revalidate = 60;
 
@@ -80,14 +80,20 @@ async function getDashboardStats(): Promise<DashboardStats> {
 export default async function DashboardPage() {
   const stats = await getDashboardStats();
 
+  const now = new Date();
+  const currentMonth = now.toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">Accounts Payable overview</p>
+        <p className="text-sm text-muted-foreground">{currentMonth}</p>
       </div>
 
-      <DashboardRealtime initialStats={stats} />
+      <DashboardContent initialStats={stats} currentMonth={currentMonth} />
     </div>
   );
 }
