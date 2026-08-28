@@ -64,7 +64,7 @@ export default function NewVoucherPage() {
   const [error, setError] = useState<string | null>(null);
   const [vendors, setVendors] = useState<VendorOption[]>([]);
 
-  const { register, watch, setValue, trigger, getValues } = useForm<HeaderForm>({
+  const { register, watch, trigger, getValues } = useForm<HeaderForm>({
     defaultValues: {
       doc_date: new Date().toISOString().slice(0, 10),
       supplier_id: "",
@@ -168,6 +168,17 @@ export default function NewVoucherPage() {
         return;
       }
 
+      const { data: appUser, error: appUserError } = await supabase
+        .from("app_users")
+        .select("id")
+        .eq("auth_uid", user.id)
+        .single();
+
+      if (appUserError || !appUser) {
+        setError("Your application user profile could not be found");
+        return;
+      }
+
       const header = getValues();
       const vendor = vendors.find((v) => v.id === header.supplier_id);
       if (!vendor) {
@@ -195,36 +206,34 @@ export default function NewVoucherPage() {
               .slice(0, 10)
           : header.doc_date);
 
-      const { error: invoiceError } = await supabase.from("invoices").insert({
-        doc_number: docNumber,
-        doc_date: header.doc_date,
-        supplier_code: vendor.code,
-        supplier_id: vendor.id,
-        inv_number: header.inv_number || null,
-        inv_date: header.inv_date || null,
-        due_date: dueDate || null,
-        remark: header.remark || null,
-        ap_type_code: header.ap_type_code || null,
-        vat_type: header.vat_type,
-        wht_code: header.wht_code || null,
-        total_no_vat: lineTotals.dr,
-        total_amount: lineTotals.dr,
-        balance: lineTotals.dr,
-        status: "draft",
-        created_by: user.id,
-        updated_by: user.id,
-      });
+      const { data: insertedInvoice, error: invoiceError } = await supabase
+        .from("invoices")
+        .insert({
+          doc_number: docNumber,
+          doc_date: header.doc_date,
+          supplier_code: vendor.code,
+          supplier_id: vendor.id,
+          inv_number: header.inv_number || null,
+          inv_date: header.inv_date || null,
+          due_date: dueDate || null,
+          remark: header.remark || null,
+          ap_type_code: header.ap_type_code || null,
+          vat_type: header.vat_type,
+          wht_code: header.wht_code || null,
+          total_no_vat: lineTotals.dr,
+          total_amount: lineTotals.dr,
+          balance: lineTotals.dr,
+          status: "draft",
+          created_by: appUser.id,
+          updated_by: appUser.id,
+        })
+        .select("id")
+        .single();
 
       if (invoiceError) {
         setError(invoiceError.message);
         return;
       }
-
-      const { data: insertedInvoice } = await supabase
-        .from("invoices")
-        .select("id")
-        .eq("doc_number", docNumber)
-        .single();
 
       if (insertedInvoice) {
         const items = lines
