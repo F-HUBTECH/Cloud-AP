@@ -104,7 +104,10 @@ export function Sidebar() {
   const { roles, isLoading: rolesLoading } = usePermission();
   const [collapsed, setCollapsed] = useState(false);
 
-  const isAdmin = useMemo(() => roles.includes("ADMIN"), [roles]);
+  const isAdmin = useMemo(
+    () => roles.includes("ADMIN") || roles.includes("SUPERADMIN"),
+    [roles]
+  );
   const isFinance = useMemo(() => roles.includes("FINANCE") || isAdmin, [roles, isAdmin]);
 
   const navItems = useMemo(() => {
