@@ -37,8 +37,16 @@ export function usePermission(): PermissionState {
             if (userRoles) {
               const roleCodes = userRoles
                 .map((ur: Record<string, unknown>) => {
-                  const roles = ur.roles as Record<string, unknown>[] | null;
-                  return Array.isArray(roles) ? roles[0]?.code as string : null;
+                  const role = ur.roles as
+                    | Record<string, unknown>
+                    | Record<string, unknown>[]
+                    | null;
+
+                  if (Array.isArray(role)) {
+                    return role[0]?.code as string | undefined;
+                  }
+
+                  return role?.code as string | undefined;
                 })
                 .filter((code): code is string => Boolean(code));
               setRoles(roleCodes);
