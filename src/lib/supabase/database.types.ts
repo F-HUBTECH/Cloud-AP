@@ -882,6 +882,7 @@ export type Database = {
       }
       gl_accounts: {
         Row: {
+          account_category: string
           account_type: string | null
           code: string
           created_at: string
@@ -889,10 +890,12 @@ export type Database = {
           is_active: boolean
           level_no: number | null
           name: string
+          normal_balance: string
           parent_code: string | null
           updated_at: string
         }
         Insert: {
+          account_category?: string
           account_type?: string | null
           code: string
           created_at?: string
@@ -900,10 +903,12 @@ export type Database = {
           is_active?: boolean
           level_no?: number | null
           name: string
+          normal_balance?: string
           parent_code?: string | null
           updated_at?: string
         }
         Update: {
+          account_category?: string
           account_type?: string | null
           code?: string
           created_at?: string
@@ -911,6 +916,7 @@ export type Database = {
           is_active?: boolean
           level_no?: number | null
           name?: string
+          normal_balance?: string
           parent_code?: string | null
           updated_at?: string
         }

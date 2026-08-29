@@ -62,6 +62,8 @@ export const glAccountSchema = z.object({
   level_no: z.number().int().min(1).default(1),
   parent_code: z.string().max(20).optional().nullable(),
   account_type: z.enum(["detail", "header", "subtotal"]).default("detail"),
+  account_category: z.enum(["asset", "liability", "equity", "revenue", "expense"]).default("asset"),
+  normal_balance: z.enum(["debit", "credit"]).default("debit"),
   is_active: z.boolean().default(true),
 });
 
@@ -72,6 +74,8 @@ export const glAccountUpdateSchema = z.object({
   level_no: z.number().int().min(1),
   parent_code: z.string().max(20).optional().nullable(),
   account_type: z.enum(["detail", "header", "subtotal"]),
+  account_category: z.enum(["asset", "liability", "equity", "revenue", "expense"]),
+  normal_balance: z.enum(["debit", "credit"]),
   is_active: z.boolean(),
 });
 

@@ -590,7 +590,7 @@ export class SettingsService {
     if (error) throw new AppError(`Failed to delete user: ${error.message}`, "SETTINGS_ERROR");
   }
 
-  async createGlAccount(formData: { code: string; name: string; level_no?: number; parent_code?: string | null; account_type?: string; is_active?: boolean }): Promise<Record<string, unknown>> {
+  async createGlAccount(formData: { code: string; name: string; level_no?: number; parent_code?: string | null; account_type?: string; account_category?: string; normal_balance?: string; is_active?: boolean }): Promise<Record<string, unknown>> {
     const supabase = await createServerClient();
     const { data: existing } = await supabase.from("gl_accounts").select("id").eq("code", formData.code).maybeSingle();
     if (existing) throw new DuplicateError("code", formData.code);

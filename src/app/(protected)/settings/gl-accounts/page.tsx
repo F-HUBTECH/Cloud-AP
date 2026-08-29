@@ -20,6 +20,8 @@ interface GlAccount {
   level_no: number;
   parent_code: string | null;
   account_type: string;
+  account_category: string;
+  normal_balance: string;
   is_active: boolean;
 }
 
@@ -29,6 +31,8 @@ interface GlAccountFormData {
   level_no: number;
   parent_code: string | null;
   account_type: string;
+  account_category: string;
+  normal_balance: string;
   is_active: boolean;
 }
 
@@ -38,6 +42,8 @@ const emptyForm: GlAccountFormData = {
   level_no: 1,
   parent_code: null,
   account_type: "detail",
+  account_category: "asset",
+  normal_balance: "debit",
   is_active: true,
 };
 
@@ -45,6 +51,19 @@ const ACCOUNT_TYPES = [
   { value: "detail", label: "Detail" },
   { value: "header", label: "Header" },
   { value: "subtotal", label: "Subtotal" },
+];
+
+const ACCOUNT_CATEGORIES = [
+  { value: "asset", label: "Asset / สินทรัพย์" },
+  { value: "liability", label: "Liability / หนี้สิน" },
+  { value: "equity", label: "Equity / ส่วนของเจ้าของ" },
+  { value: "revenue", label: "Revenue / รายได้" },
+  { value: "expense", label: "Expense / ค่าใช้จ่าย" },
+];
+
+const NORMAL_BALANCES = [
+  { value: "debit", label: "Debit (Dr)" },
+  { value: "credit", label: "Credit (Cr)" },
 ];
 
 export default function GlAccountsPage() {
@@ -94,6 +113,8 @@ export default function GlAccountsPage() {
       level_no: item.level_no,
       parent_code: item.parent_code,
       account_type: item.account_type,
+      account_category: item.account_category ?? "asset",
+      normal_balance: item.normal_balance ?? "debit",
       is_active: item.is_active,
     });
     setError(null);
@@ -114,6 +135,8 @@ export default function GlAccountsPage() {
           level_no: form.level_no,
           parent_code: form.parent_code || null,
           account_type: form.account_type,
+          account_category: form.account_category,
+          normal_balance: form.normal_balance,
           is_active: form.is_active,
         });
       } else {
@@ -123,6 +146,8 @@ export default function GlAccountsPage() {
           level_no: form.level_no,
           parent_code: form.parent_code || null,
           account_type: form.account_type,
+          account_category: form.account_category,
+          normal_balance: form.normal_balance,
           is_active: form.is_active,
         });
       }
@@ -188,6 +213,8 @@ export default function GlAccountsPage() {
               <th>Level</th>
               <th>Parent</th>
               <th>Type</th>
+              <th>Category</th>
+              <th>Normal Balance</th>
               <th>Active</th>
               <th className="text-right">Actions</th>
             </tr>
@@ -195,13 +222,13 @@ export default function GlAccountsPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={7} className="py-12 text-center text-muted-foreground">
+                <td colSpan={9} className="py-12 text-center text-muted-foreground">
                   <Loader2 className="mx-auto h-6 w-6 animate-spin" />
                 </td>
               </tr>
             ) : items.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-12 text-center text-muted-foreground">
+                <td colSpan={9} className="py-12 text-center text-muted-foreground">
                   No GL accounts found
                 </td>
               </tr>
@@ -213,6 +240,8 @@ export default function GlAccountsPage() {
                   <td>{item.level_no}</td>
                   <td>{item.parent_code ?? "—"}</td>
                   <td className="capitalize">{item.account_type}</td>
+                  <td className="capitalize">{item.account_category ?? "—"}</td>
+                  <td className="uppercase">{item.normal_balance ?? "—"}</td>
                   <td>{item.is_active ? "Yes" : "No"}</td>
                   <td className="text-right">
                     <div className="flex items-center justify-end gap-1">
@@ -307,6 +336,32 @@ export default function GlAccountsPage() {
               >
                 {ACCOUNT_TYPES.map((t) => (
                   <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="account_category" className="label-text">Account Category</label>
+              <select
+                id="account_category"
+                value={form.account_category}
+                onChange={(e) => setForm((f) => ({ ...f, account_category: e.target.value }))}
+                className="input-field"
+              >
+                {ACCOUNT_CATEGORIES.map((category) => (
+                  <option key={category.value} value={category.value}>{category.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="normal_balance" className="label-text">Normal Balance</label>
+              <select
+                id="normal_balance"
+                value={form.normal_balance}
+                onChange={(e) => setForm((f) => ({ ...f, normal_balance: e.target.value }))}
+                className="input-field"
+              >
+                {NORMAL_BALANCES.map((balance) => (
+                  <option key={balance.value} value={balance.value}>{balance.label}</option>
                 ))}
               </select>
             </div>
