@@ -142,7 +142,14 @@ export default function NewVoucherPage() {
 
   const updateLine = (index: number, field: keyof LineItem, value: string) => {
     setLines((prev) =>
-      prev.map((line, i) => (i === index ? { ...line, [field]: value } : line))
+      prev.map((line, i) => {
+        if (i !== index) return line;
+        if (field === "gl_account") {
+          const account = glAccounts.find((item) => item.code === value);
+          return { ...line, gl_account: value, ...(account ? { description: account.name } : {}) };
+        }
+        return { ...line, [field]: value };
+      })
     );
   };
 
