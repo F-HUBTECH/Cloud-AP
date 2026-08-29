@@ -24,6 +24,7 @@ interface InvoiceDetail {
   doc_date: string;
   supplier_code: string;
   supplier_id: string;
+  supplier_name: string | null;
   inv_number: string | null;
   inv_date: string | null;
   due_date: string | null;
@@ -46,6 +47,13 @@ interface LineItem {
   description: string;
   dr_amount: number;
   cr_amount: number;
+}
+
+interface VendorOption {
+  id: string;
+  code: string;
+  name_en: string;
+  name_th: string | null;
 }
 
 const STATUS_BADGE: Record<string, string> = {
@@ -72,10 +80,12 @@ export default function VoucherDetailPage({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [invoice, setInvoice] = useState<InvoiceDetail | null>(null);
+  const [vendors, setVendors] = useState<VendorOption[]>([]);
   const [isEditing, setIsEditing] = useState(false);
 
   const [header, setHeader] = useState({
     doc_date: "",
+    supplier_id: "",
     inv_number: "",
     inv_date: "",
     due_date: "",
@@ -102,8 +112,15 @@ export default function VoucherDetailPage({
       .single();
 
     if (inv) {
+      const { data: supplier } = await supabase
+        .from("vendors")
+        .select("name_en, name_th")
+        .eq("id", inv.supplier_id)
+        .maybeSingle();
+
       const detail: InvoiceDetail = {
         ...inv,
+        supplier_name: supplier?.name_th || supplier?.name_en || null,
         total_no_vat: Number(inv.total_no_vat) || 0,
         total_amount: Number(inv.total_amount) || 0,
         balance: Number(inv.balance) || 0,
@@ -111,6 +128,7 @@ export default function VoucherDetailPage({
       setInvoice(detail);
       setHeader({
         doc_date: detail.doc_date ?? "",
+        supplier_id: detail.supplier_id,
         inv_number: detail.inv_number ?? "",
         inv_date: detail.inv_date ?? "",
         due_date: detail.due_date ?? "",
@@ -151,6 +169,15 @@ export default function VoucherDetailPage({
   useEffect(() => {
     fetchInvoice();
   }, [fetchInvoice]);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("vendors")
+      .select("id, code, name_en, name_th")
+      .order("code")
+      .then(({ data }) => setVendors((data ?? []) as VendorOption[]));
+  }, []);
 
   const totalDr = lines.reduce((sum, l) => sum + (l.dr_amount || 0), 0);
   const totalCr = lines.reduce((sum, l) => sum + (l.cr_amount || 0), 0);
@@ -200,6 +227,10 @@ export default function VoucherDetailPage({
         .from("invoices")
         .update({
           doc_date: header.doc_date || invoice.doc_date,
+          supplier_id: header.supplier_id || invoice.supplier_id,
+          supplier_code:
+            vendors.find((vendor) => vendor.id === header.supplier_id)?.code ??
+            invoice.supplier_code,
           inv_number: header.inv_number || null,
           inv_date: header.inv_date || null,
           due_date: header.due_date || null,
@@ -407,13 +438,29 @@ export default function VoucherDetailPage({
                     />
                   </Field>
                   <Field label="Supplier">
-                    <p className="text-sm font-medium pt-2">{invoice.supplier_code}</p>
+                    <select
+                      value={header.supplier_id}
+                      onChange={(e) =>
+                        setHeader((h) => ({ ...h, supplier_id: e.target.value }))
+                      }
+                      className="input-field"
+                    >
+                      <option value="">Select supplier</option>
+                      {vendors.map((vendor) => (
+                        <option key={vendor.id} value={vendor.id}>
+                          {vendor.code} — {vendor.name_th || vendor.name_en}
+                        </option>
+                      ))}
+                    </select>
                   </Field>
                 </>
               ) : (
                 <>
                   <InfoItem label="Document Date" value={formatDate(invoice.doc_date)} />
-                  <InfoItem label="Supplier" value={invoice.supplier_code} />
+                  <InfoItem
+                    label="Supplier"
+                    value={`${invoice.supplier_code}${invoice.supplier_name ? ` — ${invoice.supplier_name}` : ""}`}
+                  />
                 </>
               )}
               {isEditing ? (

@@ -2,6 +2,8 @@
 
 Next.js 15 App Router + Supabase (PostgreSQL + Auth + Storage) ระบบลูกหนี้การค้า
 
+คู่มือการใช้งาน: [HTML](user-guide.html) · [Markdown](USER_GUIDE.md)
+
 ## โครงสร้างโปรเจกต์
 
 ```

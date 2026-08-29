@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>คู่มือการใช้งาน KSAP</title>
+  <style>
+    :root { color-scheme: light; --ink:#172033; --muted:#617087; --brand:#2563eb; --line:#dbe3ef; --soft:#f5f8fc; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:#eef3f8; font:16px/1.7 system-ui,-apple-system,"Segoe UI",sans-serif; }
+    .wrap { max-width:1180px; margin:auto; padding:28px 20px 64px; }
+    header { background:linear-gradient(135deg,#12366b,#2563eb); color:white; border-radius:18px; padding:38px; margin-bottom:22px; box-shadow:0 12px 32px #173d7026; }
+    header h1 { margin:0 0 6px; font-size:clamp(28px,4vw,42px); }
+    header p { margin:0; opacity:.88; }
+    .layout { display:grid; grid-template-columns:250px 1fr; gap:22px; align-items:start; }
+    nav { position:sticky; top:18px; background:white; border:1px solid var(--line); border-radius:14px; padding:16px; }
+    nav strong { display:block; margin-bottom:8px; }
+    nav a { display:block; color:#365276; text-decoration:none; padding:4px 0; font-size:14px; }
+    nav a:hover { color:var(--brand); }
+    main { background:white; border:1px solid var(--line); border-radius:14px; padding:34px clamp(20px,4vw,42px); }
+    section { scroll-margin-top:20px; margin-bottom:38px; }
+    h2 { color:#173d70; border-bottom:2px solid var(--line); padding-bottom:7px; margin-top:0; }
+    h3 { color:#234b7c; margin-bottom:6px; }
+    code { background:#eef3f8; color:#243b5b; border-radius:4px; padding:1px 5px; }
+    pre { overflow:auto; background:#172033; color:#e6edf7; border-radius:8px; padding:16px; }
+    table { width:100%; border-collapse:collapse; margin:12px 0 18px; }
+    th,td { border:1px solid var(--line); padding:9px 11px; text-align:left; vertical-align:top; }
+    th { background:var(--soft); }
+    .note { background:#eff6ff; border-left:4px solid var(--brand); padding:11px 15px; margin:14px 0; }
+    li { margin:4px 0; }
+    footer { color:var(--muted); text-align:center; margin-top:22px; font-size:14px; }
+    @media (max-width:800px) { .layout { display:block; } nav { position:static; margin-bottom:20px; } main { padding:24px 18px; } }
+    @media print { body { background:white; } .wrap { padding:0; } header,main { box-shadow:none; border:0; } nav { display:none; } main { padding:0; } section { break-inside:avoid; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>คู่มือการใช้งาน KSAP</h1>
+      <p>ระบบ Accounts Payable สำหรับพนักงานบัญชี ผู้อนุมัติ และผู้ดูแลระบบ</p>
+    </header>
+    <div class="layout">
+      <nav aria-label="สารบัญ">
+        <strong>สารบัญ</strong>
+        <a href="#overview">ภาพรวม</a>
+        <a href="#login">เข้าสู่ระบบ</a>
+        <a href="#roles">สิทธิ์ผู้ใช้</a>
+        <a href="#setup">ตั้งค่าระบบ</a>
+        <a href="#vendors">ผู้ขาย</a>
+        <a href="#vouchers">AP Voucher</a>
+        <a href="#approval">อนุมัติ</a>
+        <a href="#payments">จ่ายเงิน</a>
+        <a href="#deposits">เงินมัดจำ</a>
+        <a href="#other">Debit Note / Transfer</a>
+        <a href="#recon">กระทบยอดและตรวจสอบ</a>
+        <a href="#reports">รายงาน</a>
+        <a href="#closing">ปิดงวด</a>
+        <a href="#troubleshooting">แก้ปัญหา</a>
+        <a href="#developer">สำหรับ Developer</a>
+      </nav>
+      <main>
+        <section id="overview">
+          <h2>1. ภาพรวมระบบ</h2>
+          <p>ลำดับงานหลัก: ตั้งค่าข้อมูลหลัก → เพิ่มผู้ขาย → บันทึก AP Voucher → อนุมัติ → จ่ายเงิน → กระทบยอด → ตรวจสอบรายงาน → ปิดงวด</p>
+          <p>ระบบใช้ THB เป็นค่าเริ่มต้น และคำนวณ VAT/WHT ตามข้อมูลผู้ขายหรือรหัสภาษี</p>
+        </section>
+
+        <section id="login">
+          <h2>2. การเข้าสู่ระบบ</h2>
+          <ol><li>เปิด URL ของระบบ</li><li>กรอก Email และ Password</li><li>กด <strong>Sign in</strong></li><li>ระบบพาไป <strong>Dashboard</strong> เมื่อบัญชี Active และมีสิทธิ์</li></ol>
+          <div class="note">เข้าไม่ได้: ตรวจสอบบัญชี Supabase Auth, สถานะ Active และ Role</div>
+        </section>
+
+        <section id="roles">
+          <h2>3. สิทธิ์ผู้ใช้งาน</h2>
+          <table><thead><tr><th>Role</th><th>การใช้งานหลัก</th></tr></thead><tbody>
+            <tr><td><code>SUPERADMIN</code> / <code>ADMIN</code></td><td>ใช้งานทุกเมนู รวม Settings, Users และปิดงวด</td></tr>
+            <tr><td><code>AP_MANAGER</code> / <code>APPROVER</code></td><td>ตรวจสอบ อนุมัติ หรือปฏิเสธเอกสาร</td></tr>
+            <tr><td><code>AP_USER</code></td><td>สร้างและแก้ไขเอกสาร AP ตามสิทธิ์</td></tr>
+            <tr><td><code>VIEWER</code></td><td>ดูข้อมูลและรายงานแบบอ่านอย่างเดียว</td></tr>
+          </tbody></table>
+        </section>
+
+        <section id="setup">
+          <h2>4. ตั้งค่าก่อนเริ่มใช้งาน</h2>
+          <ol><li><strong>Settings &gt; Company</strong>: ข้อมูลบริษัท VAT/WHT และบัญชี GL</li><li><strong>Settings &gt; Period</strong>: สร้างหรือเปิดรอบบัญชี</li><li><strong>Chart of Accounts</strong>: ตรวจสอบ GL</li><li><strong>AP Types</strong>: ตั้งประเภทเอกสาร</li><li><strong>VAT Rates / WHT Rates</strong>: ตั้งรหัสภาษี</li><li><strong>Payment Codes</strong>: ตั้งวิธีจ่าย</li><li><strong>Document Number</strong>: ตั้ง Prefix และเลขลำดับ</li><li><strong>Users</strong>: สร้างผู้ใช้และกำหนด Role</li></ol>
+          <div class="note">ตรวจสอบว่ารอบบัญชีเปิดอยู่ก่อนบันทึกธุรกรรม</div>
+        </section>
+
+        <section id="vendors">
+          <h2>5. จัดการผู้ขาย</h2>
+          <ol><li>ไปที่ <strong>Vendors &gt; New Vendor</strong></li><li>กรอก Vendor Code และ Name (English)</li><li>กรอกชื่อไทย เลขผู้เสียภาษี ที่อยู่ และข้อมูลติดต่อ</li><li>ตั้ง VAT Rate, WHT Rate, Credit Term และ WHT Card Type</li><li>ตรวจสอบ <strong>Review &amp; Confirm</strong> แล้วกด <strong>Save</strong></li></ol>
+          <p>ค้นหาด้วยรหัสหรือชื่อผู้ขาย กดชื่อเพื่อดูยอดเอกสาร ยอดจ่าย และยอดคงเหลือ กด <strong>Edit</strong> เพื่อแก้ไข</p>
+        </section>
+
+        <section id="vouchers">
+          <h2>6. บันทึก AP Voucher</h2>
+          <ol><li>ไปที่ <strong>AP Vouchers &gt; New AP Voucher</strong></li><li>เลือก Document Date และ Vendor</li><li>กรอก Invoice Number, Invoice Date และ Due Date</li><li>เลือก VAT Type, AP Type และ WHT Code</li><li>เพิ่ม Detail Lines: GL Account, Description, Debit และ Credit</li><li>ตรวจสอบ Debit/Credit ให้สมดุล</li><li>ตรวจสอบ Review &amp; Confirm แล้วกด <strong>Save</strong></li></ol>
+          <p>เอกสารใหม่เริ่มเป็น <code>draft</code> จากนั้นกด <strong>Submit for Approval</strong></p>
+          <p>สถานะ: <code>draft</code>, <code>pending_approval</code>, <code>approved</code>, <code>rejected</code>, <code>posted</code>, <code>cancelled</code>, <code>voided</code></p>
+        </section>
+
+        <section id="approval">
+          <h2>7. อนุมัติเอกสาร</h2>
+          <ol><li>ผู้อนุมัติไปที่ <strong>Approvals</strong></li><li>เปิดเลขที่เอกสารเพื่อตรวจสอบ</li><li>กด <strong>Approve</strong> หรือ <strong>Reject</strong></li><li>ระบุเหตุผลเมื่อระบบร้องขอ แล้วกดยืนยัน</li></ol>
+        </section>
+
+        <section id="payments">
+          <h2>8. สร้างรายการจ่ายเงิน</h2>
+          <p>เปิด AP Voucher ที่มีสถานะ <code>approved</code> แล้วกด <strong>Create Payment</strong></p>
+          <ol><li>เลือกวิธีจ่าย: Cash, Cheque, Bank Transfer, Credit Card, Offset หรือ Deposit</li><li>กรอกเลขที่เช็คหรือข้อมูลธนาคารเมื่อเกี่ยวข้อง</li><li>เลือกใบสำคัญใน <strong>Outstanding Invoices</strong></li><li>ระบุจำนวนเงิน ตรวจสอบ WHT และยอดสุทธิ</li><li>ตรวจสอบ Payment Items และ Applied Invoices</li><li>กด <strong>Save</strong></li></ol>
+          <p>ระบบไม่ให้จับคู่เกินยอดคงค้างของใบสำคัญ และคำนวณยอดสุทธิตาม WHT</p>
+        </section>
+
+        <section id="deposits">
+          <h2>9. เงินมัดจำและการนำไปหัก</h2>
+          <h3>บันทึกเงินมัดจำ</h3><p>ไปที่ <strong>Deposits &gt; New Deposit</strong> เลือกผู้ขาย กรอกวันที่ จำนวนเงิน ข้อมูลเช็คหรือหมายเหตุ แล้วกด <strong>Save</strong></p>
+          <h3>นำเงินมัดจำไปหัก</h3><ol><li>ไปที่ <strong>Deposit Apply &gt; Apply Deposit</strong></li><li>เลือกเงินมัดจำที่มียอดเหลือ</li><li>เลือกใบสำคัญของผู้ขายเดียวกัน</li><li>กรอกจำนวนเงิน ตรวจสอบ VAT และยอดคงเหลือ</li><li>ยืนยันรายการ</li></ol>
+        </section>
+
+        <section id="other">
+          <h2>10. Debit Note และ Transfer</h2>
+          <h3>Debit Note</h3><p>ไปที่ <strong>Debit Notes &gt; New Debit Note</strong> กรอกผู้ขาย วันที่ เลขอ้างอิง และ Detail Lines พร้อม GL Account, Debit, Credit จากนั้นตรวจสอบยอดรวมและบันทึก</p>
+          <h3>Vendor Transfer</h3><p>ไปที่ <strong>Transfers</strong> เลือกผู้ขายต้นทาง ผู้ขายปลายทาง จำนวนเงิน วันที่ และ Remark แล้วบันทึก ตรวจสอบข้อมูลก่อนยืนยัน</p>
+        </section>
+
+        <section id="recon">
+          <h2>11. Bank Reconciliation และ Check Account</h2>
+          <h3>Bank Reconciliation</h3><p>ไปที่ <strong>Bank Recon &gt; New Reconciliation</strong> เลือกธนาคาร กรอกวันที่ จำนวนเงิน เลขเช็ค และหมายเหตุ ตรวจสอบใน Open Reconciliations หากบันทึกผิดให้ยกเลิกพร้อมเหตุผล</p>
+          <h3>Check Account</h3><p>เลือกปีและเดือนแล้วกดตรวจสอบ ระบบแสดงสถานะ Balanced/Out of Balance ยอด GL ยอด AP และส่วนต่าง หากไม่สมดุล ให้ตรวจ GL, AP, Payment และรอบบัญชี</p>
+        </section>
+
+        <section id="reports">
+          <h2>12. รายงาน</h2>
+          <table><thead><tr><th>รายงาน</th><th>หน้าที่</th></tr></thead><tbody>
+            <tr><td>AP Aging</td><td>วิเคราะห์เจ้าหนี้ค้างตามอายุหนี้</td></tr><tr><td>Vendor Card</td><td>รายการเคลื่อนไหวของผู้ขาย</td></tr><tr><td>Detail Ledger</td><td>รายการบัญชีแยกตามช่วงเวลาและ GL</td></tr><tr><td>Payment Register</td><td>รายการจ่ายเงิน</td></tr><tr><td>Invoice Register</td><td>รายการใบสำคัญ</td></tr><tr><td>Vendor Balance</td><td>สรุปยอดคงเหลือผู้ขาย</td></tr><tr><td>WHT Report</td><td>ฐานภาษีและภาษีหัก ณ ที่จ่าย</td></tr>
+          </tbody></table>
+          <p>กำหนดตัวกรองก่อนกดสร้างรายงาน และตรวจสอบช่วงวันที่ทุกครั้ง</p>
+        </section>
+
+        <section id="closing">
+          <h2>13. การปิดงวด</h2>
+          <h3>Month-End</h3><ol><li>ไปที่ <strong>Period &gt; Month-End</strong></li><li>เลือกปีและเดือน</li><li>ตรวจรายการค้าง ยอด Vendor และ Check Account</li><li>ต้องเป็น Balanced ก่อนกดปิดงวด</li></ol>
+          <h3>Year-End</h3><p>ไปที่ <strong>Period &gt; Year-End</strong> ตรวจสถานะทุกเดือนและยอดรวม แล้วปิดปีเมื่อข้อมูลครบถ้วน</p>
+          <div class="note">สำรองข้อมูลและให้ผู้มีอำนาจตรวจสอบก่อนปิดงวด</div>
+        </section>
+
+        <section id="troubleshooting">
+          <h2>14. แก้ปัญหาเบื้องต้น</h2>
+          <table><thead><tr><th>อาการ</th><th>แนวทางตรวจสอบ</th></tr></thead><tbody>
+            <tr><td>ไม่เห็นเมนู</td><td>ตรวจ Role แล้วเข้าใช้งานใหม่</td></tr><tr><td>บันทึกไม่ได้</td><td>ตรวจข้อมูลบังคับ รอบบัญชี และข้อความ validation</td></tr><tr><td>แก้เอกสารไม่ได้</td><td>เอกสารอาจไม่ใช่ draft หรือรอบบัญชีปิดแล้ว</td></tr><tr><td>อนุมัติไม่ได้</td><td>ตรวจ Role ผู้อนุมัติและสถานะเอกสาร</td></tr><tr><td>ยอดจ่ายเกิน</td><td>ตรวจยอดคงค้างและยอดที่จับคู่แล้ว</td></tr><tr><td>Check Account ไม่สมดุล</td><td>ตรวจ GL, AP, Payment และรอบบัญชี</td></tr><tr><td>เลขที่ผิด</td><td>ให้ ADMIN ตรวจ Document Number และ Sequence</td></tr>
+          </tbody></table>
+        </section>
+
+        <section id="developer">
+          <h2>15. สำหรับผู้ดูแลระบบและ Developer</h2>
+          <pre><code>npm install
+npm run dev
+npm run lint
+npm run type-check
+npm run build
+npm run db:push</code></pre>
+          <p>ตัวแปรหลักใน <code>.env.local</code>: <code>NEXT_PUBLIC_SUPABASE_URL</code>, <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code>, <code>SUPABASE_SERVICE_ROLE_KEY</code></p>
+          <div class="note">ห้ามเปิดเผย SUPABASE_SERVICE_ROLE_KEY และห้ามใช้ข้อมูลจริงในบัญชีทดสอบ</div>
+        </section>
+      </main>
+    </div>
+    <footer>KSAP Accounts Payable · คู่มือการใช้งาน</footer>
+  </div>
+</body>
+</html>
