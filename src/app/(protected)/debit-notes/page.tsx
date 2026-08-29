@@ -12,6 +12,7 @@ interface DebitNoteRow {
   doc_date: string;
   supplier_code: string;
   supplier_id: string;
+  supplier_name: string;
   inv_number: string | null;
   total_amount: number;
   balance: number;
@@ -46,8 +47,21 @@ async function searchDebitNotes(
   const { data } = await query;
   if (!data) return [];
 
+  const supplierIds = [...new Set(data.map((dn) => dn.supplier_id).filter(Boolean))];
+  const supplierMap = new Map<string, string>();
+  if (supplierIds.length > 0) {
+    const { data: vendors } = await supabase
+      .from("vendors")
+      .select("id, name_en, name_th")
+      .in("id", supplierIds);
+    for (const vendor of vendors ?? []) {
+      supplierMap.set(vendor.id, vendor.name_th || vendor.name_en || "");
+    }
+  }
+
   return data.map((dn) => ({
     ...dn,
+    supplier_name: supplierMap.get(dn.supplier_id) ?? "",
     total_amount: Number(dn.total_amount) || 0,
     balance: Number(dn.balance) || 0,
   }));
@@ -118,16 +132,20 @@ export default async function DebitNotesPage({
       </div>
 
       <div className="table-container">
-        <table className="data-table">
+        <table className="data-table table-fixed">
+          <colgroup>
+            <col className="w-[14%]" /><col className="w-[11%]" /><col className="w-[23%]" />
+            <col className="w-[15%]" /><col className="w-[12%]" /><col className="w-[13%]" /><col className="w-[12%]" />
+          </colgroup>
           <thead>
             <tr>
-              <th>Doc Number</th>
-              <th>Date</th>
+              <th className="whitespace-nowrap">Doc Number</th>
+              <th className="whitespace-nowrap">Date</th>
               <th>Vendor</th>
-              <th>Invoice No.</th>
+              <th className="whitespace-nowrap">Invoice No.</th>
               <th className="text-right">Amount</th>
               <th className="text-right">Balance</th>
-              <th>Status</th>
+              <th className="whitespace-nowrap">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -152,7 +170,9 @@ export default async function DebitNotesPage({
                     </Link>
                   </td>
                   <td>{formatDate(dn.doc_date)}</td>
-                  <td>{dn.supplier_code}</td>
+                  <td title={`${dn.supplier_code} ${dn.supplier_name}`}>
+                    <span className="block truncate">{dn.supplier_code}{dn.supplier_name ? ` — ${dn.supplier_name}` : ""}</span>
+                  </td>
                   <td className="text-muted-foreground">
                     {dn.inv_number ?? "-"}
                   </td>

@@ -12,6 +12,7 @@ interface DepositRow {
   doc_date: string;
   supplier_code: string;
   supplier_id: string;
+  supplier_name: string;
   deposit_amount: number;
   deposit_vat: number;
   po_number: string | null;
@@ -46,8 +47,21 @@ async function searchDeposits(
   const { data } = await query;
   if (!data) return [];
 
+  const supplierIds = [...new Set(data.map((d) => d.supplier_id).filter(Boolean))];
+  const supplierMap = new Map<string, string>();
+  if (supplierIds.length > 0) {
+    const { data: vendors } = await supabase
+      .from("vendors")
+      .select("id, name_en, name_th")
+      .in("id", supplierIds);
+    for (const vendor of vendors ?? []) {
+      supplierMap.set(vendor.id, vendor.name_th || vendor.name_en || "");
+    }
+  }
+
   return data.map((d) => ({
     ...d,
+    supplier_name: supplierMap.get(d.supplier_id) ?? "",
     deposit_amount: Number(d.deposit_amount) || 0,
     deposit_vat: Number(d.deposit_vat) || 0,
   }));
@@ -117,17 +131,22 @@ export default async function DepositsPage({
       </div>
 
       <div className="table-container">
-        <table className="data-table">
+        <table className="data-table table-fixed">
+          <colgroup>
+            <col className="w-[13%]" /><col className="w-[11%]" /><col className="w-[22%]" />
+            <col className="w-[13%]" /><col className="w-[9%]" /><col className="w-[12%]" />
+            <col className="w-[10%]" /><col className="w-[10%]" />
+          </colgroup>
           <thead>
             <tr>
-              <th>Doc Number</th>
-              <th>Date</th>
+              <th className="whitespace-nowrap">Doc Number</th>
+              <th className="whitespace-nowrap">Date</th>
               <th>Vendor</th>
               <th className="text-right">Deposit Amount</th>
               <th className="text-right">VAT</th>
-              <th>PO Number</th>
-              <th>Payment Code</th>
-              <th>Status</th>
+              <th className="whitespace-nowrap">PO Number</th>
+              <th className="whitespace-nowrap">Payment Code</th>
+              <th className="whitespace-nowrap">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -152,7 +171,9 @@ export default async function DepositsPage({
                     </Link>
                   </td>
                   <td>{formatDate(d.doc_date)}</td>
-                  <td>{d.supplier_code}</td>
+                  <td title={`${d.supplier_code} ${d.supplier_name}`}>
+                    <span className="block truncate">{d.supplier_code}{d.supplier_name ? ` — ${d.supplier_name}` : ""}</span>
+                  </td>
                   <td className="text-right font-mono">
                     {formatCurrency(d.deposit_amount)}
                   </td>
