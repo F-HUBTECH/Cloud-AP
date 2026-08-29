@@ -11,10 +11,9 @@ export function formatNumber(value: number, options?: Intl.NumberFormatOptions):
   }).format(value);
 }
 
-export function formatCurrency(value: number, currency: string = "THB"): string {
+export function formatCurrency(value: number, _currency: string = "THB"): string {
   return new Intl.NumberFormat("th-TH", {
-    style: "currency",
-    currency,
+    style: "decimal",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);

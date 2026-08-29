@@ -13,6 +13,7 @@ interface InvoiceRow {
   doc_date: string;
   supplier_code: string;
   supplier_id: string;
+  supplier_name: string | null;
   inv_number: string | null;
   total_amount: number;
   balance: number;
@@ -52,8 +53,23 @@ async function searchInvoices(
 
   const { data, count } = await query;
 
+  const supplierIds = [...new Set((data ?? []).map((inv) => inv.supplier_id))];
+  const { data: suppliers } = supplierIds.length
+    ? await supabase
+        .from("vendors")
+        .select("id, name_en, name_th")
+        .in("id", supplierIds)
+    : { data: [] };
+  const supplierNames = new Map(
+    (suppliers ?? []).map((supplier) => [
+      supplier.id,
+      supplier.name_th || supplier.name_en,
+    ])
+  );
+
   const invoices = (data ?? []).map((inv) => ({
     ...inv,
+    supplier_name: supplierNames.get(inv.supplier_id) ?? null,
     total_amount: Number(inv.total_amount) || 0,
     balance: Number(inv.balance) || 0,
   }));
@@ -177,22 +193,31 @@ export default async function PostingsPage({
       ) : (
         <>
           <div className="table-container">
-            <table className="data-table">
+            <table className="data-table table-fixed">
+              <colgroup>
+                <col className="w-[14%]" />
+                <col className="w-[11%]" />
+                <col className="w-[22%]" />
+                <col className="w-[20%]" />
+                <col className="w-[12%]" />
+                <col className="w-[12%]" />
+                <col className="w-[9%]" />
+              </colgroup>
               <thead>
                 <tr>
-                  <th>Doc Number</th>
-                  <th>Date</th>
+                  <th className="whitespace-nowrap">Doc Number</th>
+                  <th className="whitespace-nowrap">Date</th>
                   <th>Supplier</th>
                   <th>Invoice No.</th>
-                  <th className="text-right">Amount</th>
-                  <th className="text-right">Balance</th>
-                  <th>Status</th>
+                  <th className="text-right whitespace-nowrap">Amount</th>
+                  <th className="text-right whitespace-nowrap">Balance</th>
+                  <th className="whitespace-nowrap">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {invoices.map((inv) => (
                   <tr key={inv.id}>
-                    <td>
+                    <td className="whitespace-nowrap">
                       <Link
                         href={`/postings/${inv.id}`}
                         className="font-medium text-primary hover:underline"
@@ -200,16 +225,19 @@ export default async function PostingsPage({
                         {inv.doc_number}
                       </Link>
                     </td>
-                    <td>{formatDate(inv.doc_date)}</td>
+                    <td className="whitespace-nowrap">{formatDate(inv.doc_date)}</td>
                     <td>
                       <Link
                         href={`/vendors/${inv.supplier_id}`}
                         className="hover:underline"
                       >
-                        {inv.supplier_code}
+                        <span className="block truncate" title={inv.supplier_name ?? inv.supplier_code}>
+                          {inv.supplier_code}
+                          {inv.supplier_name && ` — ${inv.supplier_name}`}
+                        </span>
                       </Link>
                     </td>
-                    <td className="text-muted-foreground">
+                    <td className="truncate text-muted-foreground" title={inv.inv_number ?? undefined}>
                       {inv.inv_number ?? "—"}
                     </td>
                     <td className="text-right tabular-nums">
@@ -225,7 +253,7 @@ export default async function PostingsPage({
                     >
                       {formatCurrency(inv.balance)}
                     </td>
-                    <td>
+                    <td className="whitespace-nowrap">
                       <span
                         className={cn(
                           "badge",
