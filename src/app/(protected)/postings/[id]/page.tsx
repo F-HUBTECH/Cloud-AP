@@ -16,6 +16,7 @@ import {
   FileText,
 } from "lucide-react";
 import Link from "next/link";
+import { SubmitApprovalButton } from "./submit-approval-button";
 
 interface InvoiceDetail {
   id: string;
@@ -118,7 +119,7 @@ export default function VoucherDetailPage({
         vat_type: detail.vat_type ?? "none",
         wht_code: detail.wht_code ?? "",
       });
-      setIsEditing(CAN_EDIT.includes(detail.status));
+      setIsEditing(false);
     }
 
     const { data: items } = await supabase
@@ -330,6 +331,14 @@ export default function VoucherDetailPage({
         </div>
 
         <div className="flex items-center gap-2">
+          {invoice.status === "draft" && !isEditing && (
+            <SubmitApprovalButton invoiceId={invoice.id} onSubmitted={fetchInvoice} />
+          )}
+          {invoice.status === "approved" && !isEditing && (
+            <Link href={`/payments/assign/${invoice.supplier_id}`} className="btn-primary">
+              Create Payment
+            </Link>
+          )}
           {CAN_EDIT.includes(invoice.status) && !isEditing && (
             <button
               type="button"

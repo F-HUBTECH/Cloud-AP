@@ -29,6 +29,7 @@ interface NavItem {
   moduleCode?: string;
   adminOnly?: boolean;
   financeOnly?: boolean;
+  approverOnly?: boolean;
 }
 
 const ALL_NAV_ITEMS: NavItem[] = [
@@ -54,6 +55,13 @@ const ALL_NAV_ITEMS: NavItem[] = [
     href: "/payments",
     icon: CreditCard,
     moduleCode: MODULE_CODES.VOUCHER_PAYMENT,
+  },
+  {
+    label: "Approvals",
+    href: "/approvals",
+    icon: ClipboardCheck,
+    moduleCode: MODULE_CODES.APPROVAL,
+    approverOnly: true,
   },
   {
     label: "Transfers",
@@ -109,15 +117,20 @@ export function Sidebar() {
     [roles]
   );
   const isFinance = useMemo(() => roles.includes("FINANCE") || isAdmin, [roles, isAdmin]);
+  const isApprover = useMemo(
+    () => roles.includes("APPROVER") || roles.includes("AP_MANAGER") || isAdmin,
+    [roles, isAdmin]
+  );
 
   const navItems = useMemo(() => {
     if (rolesLoading) return ALL_NAV_ITEMS; // show all while loading to avoid layout shift
     return ALL_NAV_ITEMS.filter((item) => {
       if (item.adminOnly && !isAdmin) return false;
       if (item.financeOnly && !isFinance) return false;
+      if (item.approverOnly && !isApprover) return false;
       return true;
     });
-  }, [rolesLoading, isAdmin, isFinance]);
+  }, [rolesLoading, isAdmin, isFinance, isApprover]);
 
   return (
     <aside

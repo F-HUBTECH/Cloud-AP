@@ -260,7 +260,7 @@ export default function NewVoucherPage() {
         }
       }
 
-      router.push("/postings");
+      router.push(insertedInvoice ? `/postings/${insertedInvoice.id}` : "/postings");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");

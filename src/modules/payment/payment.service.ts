@@ -1,7 +1,7 @@
 import { createServerClient } from "@/lib/supabase/server";
 import { NotFoundError, AppError, PeriodClosedError } from "@/lib/errors";
 import { MODULE_CODES, DEFAULT_PAGE_SIZE } from "@/lib/constants";
-import { canCreate, canUpdate, canDelete } from "@/lib/utils/permissions";
+import { canCreate, canUpdate, canDelete, canApprove } from "@/lib/utils/permissions";
 import { glPostingService } from "@/modules/gl-posting/gl-posting.service";
 import { getGLTradeAccount } from "@/lib/utils/gl-helpers";
 import { logAudit } from "@/lib/utils/audit";
@@ -135,6 +135,7 @@ class PaymentService {
       {
         p_table: "payments",
         p_field: "doc_number",
+        p_group: "PV",
         p_prefix: "PV",
         p_digits: 5,
       },
@@ -143,7 +144,14 @@ class PaymentService {
     if (docNumberError) throw new AppError(docNumberError.message);
 
     const { data: { user: authUser } } = await supabase.auth.getUser();
-    const userId = authUser?.id ?? null;
+    const { data: appUser } = authUser
+      ? await supabase
+        .from("app_users")
+        .select("id")
+        .eq("auth_uid", authUser.id)
+        .maybeSingle()
+      : { data: null };
+    const userId = appUser?.id ?? null;
 
     let totalDebit = 0;
     let totalCredit = 0;
@@ -169,7 +177,7 @@ class PaymentService {
         bank_code: formData.bank_code ?? null,
         bank_name: formData.bank_name ?? null,
         cheque_number: formData.cheque_number ?? null,
-        cheque_date: formData.cheque_date ?? null,
+        cheque_date: formData.cheque_date || null,
         remark: formData.remark ?? null,
         currency: "THB",
         total_amount: totalAmount,
@@ -227,7 +235,7 @@ class PaymentService {
   }
 
   async approve(id: string): Promise<Payment> {
-    if (!(await canUpdate(MODULE_CODES.VOUCHER_PAYMENT))) {
+    if (!(await canApprove(MODULE_CODES.VOUCHER_PAYMENT))) {
       throw new AppError("No permission to approve payment", "FORBIDDEN", 403);
     }
 
@@ -291,7 +299,14 @@ class PaymentService {
     }
 
     const { data: { user: authUser } } = await supabase.auth.getUser();
-    const userId = authUser?.id ?? null;
+    const { data: appUser } = authUser
+      ? await supabase
+        .from("app_users")
+        .select("id")
+        .eq("auth_uid", authUser.id)
+        .maybeSingle()
+      : { data: null };
+    const userId = appUser?.id ?? null;
 
     const updateData: Record<string, unknown> = {
       status: "paid",

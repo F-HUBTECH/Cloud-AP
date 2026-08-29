@@ -182,7 +182,7 @@ export default function AssignPaymentPage() {
         return;
       }
 
-      router.push("/payments");
+      router.push(result.data?.id ? `/payments/${result.data.id}` : "/payments");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");

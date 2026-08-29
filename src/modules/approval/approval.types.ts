@@ -2,8 +2,9 @@ import type { ApprovalStatus } from "@/lib/constants";
 
 export interface Approval {
   id: string;
-  entityType: "voucher" | "payment" | "debit_note" | "credit_note";
+  entityType: "invoice";
   entityId: string;
+  action: "submit" | "approve" | "reject";
   requestedBy: string;
   requestedAt: string;
   status: ApprovalStatus;
@@ -20,7 +21,7 @@ export interface Approval {
 export interface ApprovalPolicy {
   id: string;
   name: string;
-  entityType: "voucher" | "payment" | "debit_note" | "credit_note";
+  entityType: "invoice";
   minApprovalLevel: number;
   requireSequentialApproval: boolean;
   isActive: boolean;
@@ -29,7 +30,7 @@ export interface ApprovalPolicy {
 }
 
 export interface ApprovalFormData {
-  entityType: "voucher" | "payment" | "debit_note" | "credit_note";
+  entityType: "invoice";
   entityId: string;
   remarks?: string;
 }
@@ -62,7 +63,7 @@ export interface ApprovalWithDetails extends Approval {
 
 export interface PendingApprovalItem {
   id: string;
-  entityType: "voucher" | "payment" | "debit_note" | "credit_note";
+  entityType: "invoice";
   entityId: string;
   documentNumber: string;
   supplierName: string;
@@ -75,7 +76,7 @@ export interface PendingApprovalItem {
 export interface ApprovalListParams {
   page?: number;
   pageSize?: number;
-  entityType?: "voucher" | "payment" | "debit_note" | "credit_note";
+  entityType?: "invoice";
   status?: ApprovalStatus;
   requestedBy?: string;
   dateFrom?: string;

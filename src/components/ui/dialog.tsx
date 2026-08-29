@@ -85,6 +85,8 @@ function DialogContent({
         onClick={() => setOpen(false)}
       />
       <div
+        role="dialog"
+        aria-modal="true"
         className={cn(
           "relative z-50 w-full max-w-lg rounded-lg border bg-[hsl(var(--card))] p-6 shadow-lg",
           className

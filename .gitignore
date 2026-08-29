@@ -4,3 +4,10 @@ node_modules/
 supabase/.temp/
 out/
 *.tsbuildinfo
+
+# Playwright
+/playwright-report/
+/test-results/
+/tests/e2e/.auth/
+.env.e2e
+.env.e2e.local

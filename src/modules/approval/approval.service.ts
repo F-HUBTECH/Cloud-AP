@@ -1,8 +1,7 @@
 import { createServerClient } from "@/lib/supabase/server";
-import { NotFoundError, AuthorizationError, AppError } from "@/lib/errors";
-import { APPROVAL_STATUS, MODULE_CODES, DEFAULT_PAGE_SIZE } from "@/lib/constants";
+import { NotFoundError, AppError } from "@/lib/errors";
+import { APPROVAL_STATUS, DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import type { ApprovalStatus } from "@/lib/constants";
-import { canApprove } from "@/lib/utils/permissions";
 import type {
   Approval,
   ApprovalFormData,
@@ -19,129 +18,44 @@ class ApprovalService {
 
   async requestApproval(formData: ApprovalFormData): Promise<Approval> {
     const supabase = await this.getClient();
+    const { data: approvalId, error } = await supabase.rpc("request_invoice_approval", {
+      p_invoice_id: formData.entityId,
+      p_comment: formData.remarks || null,
+    });
+    if (error || !approvalId) throw new AppError(error?.message ?? "Failed to request approval");
 
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (!authUser) throw new AuthorizationError("You must be logged in to request approval");
-
-    const { data: existingPending } = await supabase
+    const { data: approval, error: fetchError } = await supabase
       .from("approvals")
-      .select("id")
-      .eq("entity_type", formData.entityType)
-      .eq("entity_id", formData.entityId)
-      .eq("status", APPROVAL_STATUS.PENDING)
-      .maybeSingle();
-
-    if (existingPending) {
-      throw new AppError("An approval request is already pending for this entity", "APPROVAL_ALREADY_PENDING", 409);
-    }
-
-    const { data: approval, error } = await supabase
-      .from("approvals")
-      .insert({
-        entity_type: formData.entityType,
-        entity_id: formData.entityId,
-        requested_by: authUser.id,
-        requested_at: new Date().toISOString(),
-        status: APPROVAL_STATUS.PENDING,
-        remarks: formData.remarks || null,
-      })
-      .select()
+      .select("*")
+      .eq("id", approvalId)
       .single();
-
-    if (error) throw new AppError(error.message);
-
-    await this.updateEntityStatus(formData.entityType, formData.entityId, "pending_approval");
-
+    if (fetchError || !approval) throw new AppError(fetchError?.message ?? "Approval not found");
     return this.mapApproval(approval);
   }
 
   async approve(actionData: ApprovalActionData): Promise<Approval> {
-    if (!(await canApprove(MODULE_CODES.VOUCHER_AP))) {
-      throw new AuthorizationError("You are not authorized to approve");
-    }
-
     const supabase = await this.getClient();
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (!authUser) throw new AuthorizationError("You must be logged in to approve");
-
-    const { data: approval, error: fetchError } = await supabase
-      .from("approvals")
-      .select("*")
-      .eq("id", actionData.approvalId)
-      .single();
-
-    if (fetchError || !approval) {
-      throw new NotFoundError("Approval", actionData.approvalId);
-    }
-
-    if (approval.status !== APPROVAL_STATUS.PENDING) {
-      throw new AppError("Only pending approvals can be approved", "APPROVAL_NOT_PENDING", 422);
-    }
-
-    const { data: updated, error: updateError } = await supabase
-      .from("approvals")
-      .update({
-        status: APPROVAL_STATUS.APPROVED,
-        approved_by: authUser.id,
-        approved_at: new Date().toISOString(),
-        remarks: actionData.remarks || approval.remarks,
-      })
-      .eq("id", actionData.approvalId)
-      .select()
-      .single();
-
-    if (updateError) throw new AppError(updateError.message);
-
-    await this.updateEntityStatus(approval.entity_type, approval.entity_id, "approved");
-
-    return this.mapApproval(updated);
+    const { error } = await supabase.rpc("decide_invoice_approval", {
+      p_approval_id: actionData.approvalId,
+      p_decision: "approve",
+      p_comment: actionData.remarks || null,
+    });
+    if (error) throw new AppError(error.message);
+    return this.getById(actionData.approvalId);
   }
 
   async reject(actionData: ApprovalActionData): Promise<Approval> {
-    if (!(await canApprove(MODULE_CODES.VOUCHER_AP))) {
-      throw new AuthorizationError("You are not authorized to reject");
-    }
-
-    const supabase = await this.getClient();
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (!authUser) throw new AuthorizationError("You must be logged in to reject");
-
-    const { data: approval, error: fetchError } = await supabase
-      .from("approvals")
-      .select("*")
-      .eq("id", actionData.approvalId)
-      .single();
-
-    if (fetchError || !approval) {
-      throw new NotFoundError("Approval", actionData.approvalId);
-    }
-
-    if (approval.status !== APPROVAL_STATUS.PENDING) {
-      throw new AppError("Only pending approvals can be rejected", "APPROVAL_NOT_PENDING", 422);
-    }
-
-    if (!actionData.rejectionReason) {
+    if (!actionData.rejectionReason?.trim()) {
       throw new AppError("Rejection reason is required", "REJECTION_REASON_REQUIRED", 400);
     }
-
-    const { data: updated, error: updateError } = await supabase
-      .from("approvals")
-      .update({
-        status: APPROVAL_STATUS.REJECTED,
-        rejected_by: authUser.id,
-        rejected_at: new Date().toISOString(),
-        rejection_reason: actionData.rejectionReason,
-        remarks: actionData.remarks || approval.remarks,
-      })
-      .eq("id", actionData.approvalId)
-      .select()
-      .single();
-
-    if (updateError) throw new AppError(updateError.message);
-
-    await this.updateEntityStatus(approval.entity_type, approval.entity_id, "rejected");
-
-    return this.mapApproval(updated);
+    const supabase = await this.getClient();
+    const { error } = await supabase.rpc("decide_invoice_approval", {
+      p_approval_id: actionData.approvalId,
+      p_decision: "reject",
+      p_comment: actionData.rejectionReason,
+    });
+    if (error) throw new AppError(error.message);
+    return this.getById(actionData.approvalId);
   }
 
   async getPendingForUser(params: ApprovalListParams = {}): Promise<PendingApprovalItem[]> {
@@ -149,13 +63,29 @@ class ApprovalService {
 
     const { data: { user: authUser } } = await supabase.auth.getUser();
     if (!authUser) return [];
+    const { data: appUser } = await supabase
+      .from("app_users")
+      .select("id")
+      .eq("auth_uid", authUser.id)
+      .maybeSingle();
+    if (!appUser) return [];
 
     let query = supabase
       .from("approvals")
       .select("*")
       .eq("status", APPROVAL_STATUS.PENDING)
-      .neq("requested_by", authUser.id)
       .order("requested_at", { ascending: true });
+
+    const { data: roleRows } = await supabase
+      .from("user_roles")
+      .select("role_id")
+      .eq("user_id", appUser.id);
+    const roleIds = (roleRows ?? []).map((row) => row.role_id);
+    const { data: adminRoles } = roleIds.length
+      ? await supabase.from("roles").select("code").in("id", roleIds)
+      : { data: [] };
+    const isAdmin = (adminRoles ?? []).some((role) => role.code === "ADMIN" || role.code === "SUPERADMIN");
+    if (!isAdmin) query = query.neq("requested_by", appUser.id);
 
     if (params.entityType) {
       query = query.eq("entity_type", params.entityType);
@@ -228,27 +158,11 @@ class ApprovalService {
     };
   }
 
-  private async updateEntityStatus(
-    entityType: string,
-    entityId: string,
-    status: string,
-  ): Promise<void> {
+  private async getById(id: string): Promise<Approval> {
     const supabase = await this.getClient();
-
-    const tableMap: Record<string, string> = {
-      voucher: "invoices",
-      payment: "payments",
-      debit_note: "invoices",
-      credit_note: "invoices",
-    };
-
-    const table = tableMap[entityType];
-    if (!table) return;
-
-    await supabase
-      .from(table)
-      .update({ status })
-      .eq("id", entityId);
+    const { data, error } = await supabase.from("approvals").select("*").eq("id", id).single();
+    if (error || !data) throw new NotFoundError("Approval", id);
+    return this.mapApproval(data);
   }
 
   private async getEntityInfo(
@@ -257,7 +171,7 @@ class ApprovalService {
   ): Promise<{ documentNumber: string; supplierName: string; amount: number } | null> {
     const supabase = await this.getClient();
 
-    if (entityType === "voucher" || entityType === "debit_note" || entityType === "credit_note") {
+    if (entityType === "invoice") {
       const { data: invoice } = await supabase
         .from("invoices")
         .select("doc_number, supplier_code, total_amount")
@@ -307,19 +221,20 @@ class ApprovalService {
   private mapApproval(row: Record<string, unknown>): Approval {
     return {
       id: row.id as string,
-      entityType: row.entity_type as "voucher" | "payment" | "debit_note" | "credit_note",
+      entityType: "invoice",
       entityId: row.entity_id as string,
+      action: row.action as "submit" | "approve" | "reject",
       requestedBy: row.requested_by as string,
       requestedAt: row.requested_at as string,
       status: row.status as ApprovalStatus,
       approvedBy: (row.approved_by as string) ?? null,
       approvedAt: (row.approved_at as string) ?? null,
-      rejectedBy: (row.rejected_by as string) ?? null,
-      rejectedAt: (row.rejected_at as string) ?? null,
-      rejectionReason: (row.rejection_reason as string) ?? null,
-      remarks: (row.remarks as string) ?? null,
+      rejectedBy: row.status === APPROVAL_STATUS.REJECTED ? (row.approved_by as string) ?? null : null,
+      rejectedAt: row.status === APPROVAL_STATUS.REJECTED ? (row.approved_at as string) ?? null : null,
+      rejectionReason: row.status === APPROVAL_STATUS.REJECTED ? (row.comment as string) ?? null : null,
+      remarks: (row.comment as string) ?? null,
       createdAt: (row.created_at as string) ?? row.requested_at as string,
-      updatedAt: (row.updated_at as string) ?? row.requested_at as string,
+      updatedAt: (row.approved_at as string) ?? row.requested_at as string,
     };
   }
 }
