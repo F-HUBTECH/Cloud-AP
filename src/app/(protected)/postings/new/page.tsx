@@ -36,6 +36,8 @@ interface GlAccountOption {
   name: string;
 }
 
+interface DescriptionTemplate { id: string; description: string; }
+
 interface LineItem {
   line_no: number;
   gl_account: string;
@@ -69,8 +71,10 @@ export default function NewVoucherPage() {
   const [error, setError] = useState<string | null>(null);
   const [vendors, setVendors] = useState<VendorOption[]>([]);
   const [glAccounts, setGlAccounts] = useState<GlAccountOption[]>([]);
+  const [templates, setTemplates] = useState<DescriptionTemplate[]>([]);
+  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
 
-  const { register, watch, trigger, getValues } = useForm<HeaderForm>({
+  const { register, watch, trigger, getValues, setValue } = useForm<HeaderForm>({
     defaultValues: {
       doc_date: new Date().toISOString().slice(0, 10),
       supplier_id: "",
@@ -105,6 +109,11 @@ export default function NewVoucherPage() {
         .eq("account_type", "detail")
         .order("code");
       if (accountData) setGlAccounts(accountData as GlAccountOption[]);
+      const { data: templateData } = await supabase
+        .from("voucher_description_templates")
+        .select("id, description")
+        .order("description");
+      if (templateData) setTemplates(templateData as DescriptionTemplate[]);
     }
     fetchVendors();
   }, []);
@@ -402,8 +411,8 @@ export default function NewVoucherPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <label htmlFor="remark" className="label-text">Remark</label>
-              <textarea id="remark" {...register("remark")} className="input-field min-h-[80px]" rows={2} />
+              <div className="flex items-center justify-between"><label htmlFor="remark" className="label-text">Remark</label><select aria-label="Description template" defaultValue="" onChange={(e) => { if (e.target.value) setValue("remark", e.target.value); e.target.value = ""; }} className="input-field h-8 w-56 py-1 text-xs"><option value="">Use template...</option>{templates.map((template) => <option key={template.id} value={template.description}>{template.description}</option>)}</select></div>
+              <textarea id="remark" {...register("remark")} onKeyDown={(e) => { if (e.key === "F12") { e.preventDefault(); setTemplatePickerOpen(true); } }} className="input-field min-h-[80px]" rows={2} />
             </div>
           </div>
         )}
@@ -589,6 +598,11 @@ export default function NewVoucherPage() {
           </div>
         </div>
       </form>
+      {templatePickerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-label="Description templates">
+          <div className="card w-full max-w-lg p-6"><div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-semibold">Description Templates</h2><button type="button" onClick={() => setTemplatePickerOpen(false)} className="btn-ghost">Close</button></div><div className="max-h-80 space-y-2 overflow-y-auto">{templates.length === 0 ? <p className="py-6 text-center text-muted-foreground">No templates found</p> : templates.map((template) => <button key={template.id} type="button" onClick={() => { setValue("remark", template.description); setTemplatePickerOpen(false); }} className="block w-full rounded-md border p-3 text-left text-sm hover:bg-accent">{template.description}</button>)}</div></div>
+        </div>
+      )}
     </div>
   );
 }

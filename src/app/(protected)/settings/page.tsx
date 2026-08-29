@@ -29,6 +29,7 @@ const settingsGroups = [
       { label: "VAT Rates", href: "/settings/vat-rates", icon: Coins, description: "Value Added Tax codes and rates" },
       { label: "WHT Rates", href: "/settings/wht-rates", icon: Receipt, description: "Withholding Tax codes and rates" },
       { label: "Payment Codes", href: "/settings/payment-codes", icon: CreditCard, description: "Payment method codes (Cash, Cheque, Transfer, etc.)" },
+      { label: "Voucher Templates", href: "/settings/voucher-templates", icon: FileText, description: "Reusable AP Voucher descriptions" },
     ],
   },
   {

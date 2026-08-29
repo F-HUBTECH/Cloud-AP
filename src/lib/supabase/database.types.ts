@@ -1443,6 +1443,27 @@ export type Database = {
         }
         Relationships: []
       }
+      voucher_description_templates: {
+        Row: {
+          id: string
+          description: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          description: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          description?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payment_invoices: {
         Row: {
           amount_paid: number

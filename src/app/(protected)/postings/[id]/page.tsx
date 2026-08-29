@@ -61,6 +61,8 @@ interface GlAccountOption {
   name: string;
 }
 
+interface DescriptionTemplate { id: string; description: string; }
+
 const STATUS_BADGE: Record<string, string> = {
   draft: "badge-info",
   pending_approval: "badge-warning",
@@ -87,6 +89,8 @@ export default function VoucherDetailPage({
   const [invoice, setInvoice] = useState<InvoiceDetail | null>(null);
   const [vendors, setVendors] = useState<VendorOption[]>([]);
   const [glAccounts, setGlAccounts] = useState<GlAccountOption[]>([]);
+  const [templates, setTemplates] = useState<DescriptionTemplate[]>([]);
+  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   const [header, setHeader] = useState({
@@ -190,6 +194,11 @@ export default function VoucherDetailPage({
       .eq("account_type", "detail")
       .order("code")
       .then(({ data }) => setGlAccounts((data ?? []) as GlAccountOption[]));
+    supabase
+      .from("voucher_description_templates")
+      .select("id, description")
+      .order("description")
+      .then(({ data }) => setTemplates((data ?? []) as DescriptionTemplate[]));
   }, []);
 
   const totalDr = lines.reduce((sum, l) => sum + (l.dr_amount || 0), 0);
@@ -534,7 +543,7 @@ export default function VoucherDetailPage({
             </div>
             {isEditing ? (
               <Field label="Remark">
-                <textarea value={header.remark} onChange={(e) => setHeader((h) => ({ ...h, remark: e.target.value }))} className="input-field min-h-[80px]" rows={2} />
+                <div className="space-y-2"><select aria-label="Description template" defaultValue="" onChange={(e) => { if (e.target.value) setHeader((h) => ({ ...h, remark: e.target.value })); e.target.value = ""; }} className="input-field"><option value="">Use template...</option>{templates.map((template) => <option key={template.id} value={template.description}>{template.description}</option>)}</select><textarea value={header.remark} onChange={(e) => setHeader((h) => ({ ...h, remark: e.target.value }))} onKeyDown={(e) => { if (e.key === "F12") { e.preventDefault(); setTemplatePickerOpen(true); } }} className="input-field min-h-[80px]" rows={2} /></div>
               </Field>
             ) : invoice.remark ? (
               <div>
@@ -690,6 +699,11 @@ export default function VoucherDetailPage({
           </div>
         )}
       </form>
+      {templatePickerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-label="Description templates">
+          <div className="card w-full max-w-lg p-6"><div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-semibold">Description Templates</h2><button type="button" onClick={() => setTemplatePickerOpen(false)} className="btn-ghost">Close</button></div><div className="max-h-80 space-y-2 overflow-y-auto">{templates.length === 0 ? <p className="py-6 text-center text-muted-foreground">No templates found</p> : templates.map((template) => <button key={template.id} type="button" onClick={() => { setHeader((h) => ({ ...h, remark: template.description })); setTemplatePickerOpen(false); }} className="block w-full rounded-md border p-3 text-left text-sm hover:bg-accent">{template.description}</button>)}</div></div>
+        </div>
+      )}
     </div>
   );
 }
