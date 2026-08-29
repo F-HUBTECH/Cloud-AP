@@ -56,6 +56,11 @@ interface VendorOption {
   name_th: string | null;
 }
 
+interface GlAccountOption {
+  code: string;
+  name: string;
+}
+
 const STATUS_BADGE: Record<string, string> = {
   draft: "badge-info",
   pending_approval: "badge-warning",
@@ -81,6 +86,7 @@ export default function VoucherDetailPage({
   const [error, setError] = useState<string | null>(null);
   const [invoice, setInvoice] = useState<InvoiceDetail | null>(null);
   const [vendors, setVendors] = useState<VendorOption[]>([]);
+  const [glAccounts, setGlAccounts] = useState<GlAccountOption[]>([]);
   const [isEditing, setIsEditing] = useState(false);
 
   const [header, setHeader] = useState({
@@ -177,6 +183,13 @@ export default function VoucherDetailPage({
       .select("id, code, name_en, name_th")
       .order("code")
       .then(({ data }) => setVendors((data ?? []) as VendorOption[]));
+    supabase
+      .from("gl_accounts")
+      .select("code, name")
+      .eq("is_active", true)
+      .eq("account_type", "detail")
+      .order("code")
+      .then(({ data }) => setGlAccounts((data ?? []) as GlAccountOption[]));
   }, []);
 
   const totalDr = lines.reduce((sum, l) => sum + (l.dr_amount || 0), 0);
@@ -587,7 +600,7 @@ export default function VoucherDetailPage({
                     {isEditing ? (
                       <>
                         <td>
-                          <input value={line.gl_account} onChange={(e) => updateLine(index, "gl_account", e.target.value)} className="input-field" placeholder="GL Account" maxLength={20} />
+                          <input value={line.gl_account} onChange={(e) => updateLine(index, "gl_account", e.target.value)} className="input-field" placeholder="GL Account" maxLength={20} list="gl-account-options" />
                         </td>
                         <td>
                           <input value={line.description} onChange={(e) => updateLine(index, "description", e.target.value)} className="input-field" placeholder="Description" maxLength={200} />
@@ -632,6 +645,13 @@ export default function VoucherDetailPage({
                 </tr>
               </tfoot>
             </table>
+            <datalist id="gl-account-options">
+              {glAccounts.map((account) => (
+                <option key={account.code} value={account.code}>
+                  {account.code} — {account.name}
+                </option>
+              ))}
+            </datalist>
           </div>
           {isEditing && Math.abs(totalDr - totalCr) > 0.01 && (
             <div className="border-t bg-destructive/5 px-6 py-3 text-sm text-destructive">

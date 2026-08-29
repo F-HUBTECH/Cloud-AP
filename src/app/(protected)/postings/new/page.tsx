@@ -31,6 +31,11 @@ interface VendorOption {
   credit_term: number;
 }
 
+interface GlAccountOption {
+  code: string;
+  name: string;
+}
+
 interface LineItem {
   line_no: number;
   gl_account: string;
@@ -63,6 +68,7 @@ export default function NewVoucherPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [vendors, setVendors] = useState<VendorOption[]>([]);
+  const [glAccounts, setGlAccounts] = useState<GlAccountOption[]>([]);
 
   const { register, watch, trigger, getValues } = useForm<HeaderForm>({
     defaultValues: {
@@ -92,6 +98,13 @@ export default function NewVoucherPage() {
         .eq("is_active", true)
         .order("code");
       if (data) setVendors(data as VendorOption[]);
+      const { data: accountData } = await supabase
+        .from("gl_accounts")
+        .select("code, name")
+        .eq("is_active", true)
+        .eq("account_type", "detail")
+        .order("code");
+      if (accountData) setGlAccounts(accountData as GlAccountOption[]);
     }
     fetchVendors();
   }, []);
@@ -421,6 +434,7 @@ export default function NewVoucherPage() {
                           className="input-field"
                           placeholder="GL Account"
                           maxLength={20}
+                          list="gl-account-options"
                         />
                       </td>
                       <td>
@@ -480,6 +494,13 @@ export default function NewVoucherPage() {
                 </tfoot>
               </table>
             </div>
+            <datalist id="gl-account-options">
+              {glAccounts.map((account) => (
+                <option key={account.code} value={account.code}>
+                  {account.code} — {account.name}
+                </option>
+              ))}
+            </datalist>
             {!isBalanced && lineTotals.dr > 0 && (
               <div className="border-t bg-destructive/5 px-6 py-3 text-sm text-destructive">
                 Debit and Credit totals must be equal. Difference: {formatCurrency(Math.abs(lineTotals.dr - lineTotals.cr))}
