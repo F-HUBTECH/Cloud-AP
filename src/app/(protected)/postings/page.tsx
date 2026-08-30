@@ -211,13 +211,13 @@ export default async function PostingsPage({
                   <th>Invoice No.</th>
                   <th className="text-right whitespace-nowrap">Amount</th>
                   <th className="text-right whitespace-nowrap">Balance</th>
-                  <th className="whitespace-nowrap">Status</th>
+                  <th className="text-center whitespace-nowrap">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {invoices.map((inv) => (
                   <tr key={inv.id}>
-                    <td className="whitespace-nowrap">
+                    <td className="text-center whitespace-nowrap">
                       <Link
                         href={`/postings/${inv.id}`}
                         className="font-medium text-primary hover:underline"
