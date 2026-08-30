@@ -154,7 +154,7 @@ export default async function PaymentsPage({
           <thead>
             <tr>
               <th className="whitespace-nowrap">Doc Number</th>
-              <th className="whitespace-nowrap">Date</th>
+              <th className="date-column whitespace-nowrap">Date</th>
               <th className="text-center">Supplier</th>
               <th>Method</th>
               <th className="whitespace-nowrap">Cheque No.</th>
@@ -184,7 +184,7 @@ export default async function PaymentsPage({
                       {payment.doc_number}
                     </Link>
                   </td>
-                  <td className="whitespace-nowrap">{formatDate(payment.doc_date)}</td>
+                  <td className="date-column whitespace-nowrap">{formatDate(payment.doc_date)}</td>
                   <td className="text-center">
                     <span className="block truncate" title={payment.supplier_name ?? payment.supplier_code}>
                       {payment.supplier_code}
