@@ -185,6 +185,9 @@
   .data-table .date-column {
     @apply text-center;
   }
+  .data-table .center-column {
+    @apply text-center;
+  }
   .data-table tbody tr {
     @apply border-b transition-colors;
     border-color: hsl(var(--border));

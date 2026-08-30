@@ -205,19 +205,19 @@ export default async function PostingsPage({
               </colgroup>
               <thead>
                 <tr>
-                  <th className="whitespace-nowrap">Doc Number</th>
+                  <th className="center-column whitespace-nowrap">Doc Number</th>
                   <th className="date-column whitespace-nowrap">Date</th>
-                  <th className="text-center">Supplier</th>
+                  <th className="center-column">Supplier</th>
                   <th>Invoice No.</th>
                   <th className="text-right whitespace-nowrap">Amount</th>
                   <th className="text-right whitespace-nowrap">Balance</th>
-                  <th className="text-center whitespace-nowrap">Status</th>
+                  <th className="center-column whitespace-nowrap">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {invoices.map((inv) => (
                   <tr key={inv.id}>
-                    <td className="text-center whitespace-nowrap">
+                    <td className="center-column whitespace-nowrap">
                       <Link
                         href={`/postings/${inv.id}`}
                         className="font-medium text-primary hover:underline"
@@ -226,7 +226,7 @@ export default async function PostingsPage({
                       </Link>
                     </td>
                     <td className="date-column whitespace-nowrap">{formatDate(inv.doc_date)}</td>
-                    <td className="text-center">
+                    <td className="center-column">
                       <Link
                         href={`/vendors/${inv.supplier_id}`}
                         className="hover:underline"
@@ -253,7 +253,7 @@ export default async function PostingsPage({
                     >
                       {formatCurrency(inv.balance)}
                     </td>
-                    <td className="whitespace-nowrap">
+                    <td className="center-column whitespace-nowrap">
                       <span
                         className={cn(
                           "badge",

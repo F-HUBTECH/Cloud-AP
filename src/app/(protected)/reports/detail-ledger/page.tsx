@@ -183,7 +183,7 @@ export default function DetailLedgerPage() {
                 <tr>
                   <th>Doc Number</th>
                 <th className="date-column">Date</th>
-                  <th className="text-center">Supplier</th>
+                  <th className="center-column">Supplier</th>
                   <th>Description</th>
                   <th className="text-right">Debit</th>
                   <th className="text-right">Credit</th>
@@ -195,7 +195,7 @@ export default function DetailLedgerPage() {
                   <tr key={row.id}>
                     <td className="font-mono font-medium">{row.doc_number}</td>
                     <td className="date-column">{formatDate(row.doc_date)}</td>
-                    <td className="text-center text-muted-foreground">{row.supplier_code ?? "-"}</td>
+                    <td className="center-column text-muted-foreground">{row.supplier_code ?? "-"}</td>
                     <td className="text-muted-foreground">{row.description ?? "-"}</td>
                     <td className="text-right font-mono">
                       {row.debit > 0 ? formatCurrency(row.debit) : "-"}
