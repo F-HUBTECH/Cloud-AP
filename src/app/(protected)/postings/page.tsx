@@ -205,7 +205,7 @@ export default async function PostingsPage({
               </colgroup>
               <thead>
                 <tr>
-                  <th className="center-column whitespace-nowrap">Doc Number</th>
+                  <th className="whitespace-nowrap">Doc Number</th>
                   <th className="date-column whitespace-nowrap">Date</th>
                   <th className="center-column">Supplier</th>
                   <th>Invoice No.</th>
@@ -217,7 +217,7 @@ export default async function PostingsPage({
               <tbody>
                 {invoices.map((inv) => (
                   <tr key={inv.id}>
-                    <td className="center-column whitespace-nowrap">
+                    <td className="whitespace-nowrap">
                       <Link
                         href={`/postings/${inv.id}`}
                         className="font-medium text-primary hover:underline"
