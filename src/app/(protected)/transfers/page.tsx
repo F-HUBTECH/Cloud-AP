@@ -213,7 +213,7 @@ export default function TransferListPage() {
           <thead>
             <tr>
               <th>Doc No.</th>
-              <th>Date</th>
+              <th className="date-column">Date</th>
               <th>From Vendor</th>
               <th>To Vendor</th>
               <th className="text-right">Amount</th>
@@ -239,7 +239,7 @@ export default function TransferListPage() {
               transfers.map((t) => (
                 <tr key={t.id}>
                   <td className="font-medium">{t.doc_number}</td>
-                  <td>{formatDate(t.transfer_date)}</td>
+                  <td className="date-column">{formatDate(t.transfer_date)}</td>
                   <td>
                     {t.from_vendor
                       ? `${t.from_vendor.code} - ${t.from_vendor.name_th || t.from_vendor.name_en}`

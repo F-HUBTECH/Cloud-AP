@@ -329,9 +329,9 @@ export default function DepositApplicationsPage() {
                   <thead>
                     <tr>
                       <th>Deposit No.</th>
-                      <th>Deposit Date</th>
+                      <th className="date-column">Deposit Date</th>
                       <th>Invoice No.</th>
-                      <th>Invoice Date</th>
+                      <th className="date-column">Invoice Date</th>
                       <th>Vendor</th>
                       <th className="text-right">Amount Applied</th>
                       <th className="text-right">VAT Applied</th>
@@ -343,9 +343,9 @@ export default function DepositApplicationsPage() {
                     {activeApps.map((app) => (
                       <tr key={app.id}>
                         <td className="font-medium">{app.depositDocNumber}</td>
-                        <td>{formatDate(app.depositDate)}</td>
+                        <td className="date-column">{formatDate(app.depositDate)}</td>
                         <td className="font-medium">{app.invoiceDocNumber}</td>
-                        <td>{formatDate(app.invoiceDate)}</td>
+                        <td className="date-column">{formatDate(app.invoiceDate)}</td>
                         <td>
                           <span className="font-medium">{app.vendorCode}</span>
                           <span className="ml-1 text-muted-foreground">{app.vendorName}</span>
@@ -491,7 +491,7 @@ export default function DepositApplicationsPage() {
                           }
                         }} /></th>
                         <th>Doc No.</th>
-                        <th>Date</th>
+                        <th className="date-column">Date</th>
                         <th>Inv No.</th>
                         <th>Type</th>
                         <th className="text-right">Total Amount</th>
@@ -510,7 +510,7 @@ export default function DepositApplicationsPage() {
                             />
                           </td>
                           <td className="font-medium">{inv.docNumber}</td>
-                          <td>{formatDate(inv.docDate)}</td>
+                          <td className="date-column">{formatDate(inv.docDate)}</td>
                           <td>{inv.invNumber ?? "-"}</td>
                           <td>{inv.apTypeCode ?? "-"}</td>
                           <td className="text-right font-mono">{formatCurrency(inv.totalAmount)}</td>

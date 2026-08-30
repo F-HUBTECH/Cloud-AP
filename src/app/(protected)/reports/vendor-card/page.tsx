@@ -242,7 +242,7 @@ export default function VendorCardPage() {
               <thead>
                 <tr>
                   <th>Doc Number</th>
-                  <th>Date</th>
+                  <th className="date-column">Date</th>
                   <th>Type</th>
                   <th>Invoice No.</th>
                   <th className="text-right">Debit</th>
@@ -255,7 +255,7 @@ export default function VendorCardPage() {
                 {transactions.map((row) => (
                   <tr key={row.id}>
                     <td className="font-mono font-medium">{row.doc_number}</td>
-                    <td>{formatDate(row.doc_date)}</td>
+                    <td className="date-column">{formatDate(row.doc_date)}</td>
                     <td>{row.doc_type}</td>
                     <td className="text-muted-foreground">{row.inv_number ?? "-"}</td>
                     <td className="text-right font-mono">

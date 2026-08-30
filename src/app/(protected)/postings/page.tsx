@@ -207,7 +207,7 @@ export default async function PostingsPage({
                 <tr>
                   <th className="whitespace-nowrap">Doc Number</th>
                   <th className="whitespace-nowrap">Date</th>
-                  <th>Supplier</th>
+                  <th className="text-center">Supplier</th>
                   <th>Invoice No.</th>
                   <th className="text-right whitespace-nowrap">Amount</th>
                   <th className="text-right whitespace-nowrap">Balance</th>
@@ -226,7 +226,7 @@ export default async function PostingsPage({
                       </Link>
                     </td>
                     <td className="whitespace-nowrap">{formatDate(inv.doc_date)}</td>
-                    <td>
+                    <td className="text-center">
                       <Link
                         href={`/vendors/${inv.supplier_id}`}
                         className="hover:underline"

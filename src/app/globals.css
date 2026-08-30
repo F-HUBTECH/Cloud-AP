@@ -182,6 +182,9 @@
   .data-table td {
     @apply px-4 py-3 align-middle;
   }
+  .data-table .date-column {
+    @apply text-center;
+  }
   .data-table tbody tr {
     @apply border-b transition-colors;
     border-color: hsl(var(--border));

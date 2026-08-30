@@ -195,7 +195,7 @@ export default function WithholdingTaxPage() {
               <tr>
                 <th>PV No.</th>
                 <th>WHT Doc No.</th>
-                <th>Date</th>
+                <th className="date-column">Date</th>
                 <th>Vendor</th>
                 <th>Tax ID</th>
                 <th>WHT Code 1</th>
@@ -217,7 +217,7 @@ export default function WithholdingTaxPage() {
                   <tr key={e.id}>
                     <td className="font-medium">{e.payment_doc_number ?? "-"}</td>
                     <td className="font-mono">{e.doc_number ?? "-"}</td>
-                    <td>{e.doc_date ? formatDate(e.doc_date) : "-"}</td>
+                    <td className="date-column">{e.doc_date ? formatDate(e.doc_date) : "-"}</td>
                     <td>
                       <span className="font-medium">{e.supplier_code}</span>
                       <span className="ml-1">{e.supplier_name_en}</span>

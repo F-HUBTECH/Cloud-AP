@@ -151,7 +151,7 @@ export default function PaymentRegisterPage() {
             <thead>
               <tr>
                 <th>Doc No.</th>
-                <th>Date</th>
+                <th className="date-column">Date</th>
                 <th>Vendor</th>
                 <th>Method</th>
                 <th>Cheque No.</th>
@@ -169,7 +169,7 @@ export default function PaymentRegisterPage() {
                 payments.map((r) => (
                   <tr key={r.id}>
                     <td className="font-medium">{r.doc_number}</td>
-                    <td>{formatDate(r.doc_date)}</td>
+                    <td className="date-column">{formatDate(r.doc_date)}</td>
                     <td>
                       <span className="font-medium">{r.supplier_code}</span>
                       <span className="ml-1 text-muted-foreground">{r.supplier_name}</span>

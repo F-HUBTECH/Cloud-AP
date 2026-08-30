@@ -161,7 +161,7 @@ export default function InvoiceRegisterPage() {
             <thead>
               <tr>
                 <th>Doc No.</th>
-                <th>Date</th>
+                <th className="date-column">Date</th>
                 <th>Vendor</th>
                 <th>Invoice No.</th>
                 <th>Type</th>
@@ -179,7 +179,7 @@ export default function InvoiceRegisterPage() {
                 invoices.map((r) => (
                   <tr key={r.id}>
                     <td className="font-medium">{r.doc_number}</td>
-                    <td>{formatDate(r.doc_date)}</td>
+                    <td className="date-column">{formatDate(r.doc_date)}</td>
                     <td>
                       <span className="font-medium">{r.supplier_code}</span>
                       <span className="ml-1 text-muted-foreground">{r.supplier_name}</span>

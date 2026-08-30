@@ -279,7 +279,7 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
             <thead>
               <tr>
                 <th>Doc Number</th>
-                <th>Date</th>
+                <th className="date-column">Date</th>
                 <th className="text-right">Amount</th>
                 <th className="text-right">Balance</th>
                 <th>Status</th>
@@ -315,7 +315,7 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
                         {inv.doc_number}
                       </Link>
                     </td>
-                    <td>{formatDate(inv.doc_date)}</td>
+                    <td className="date-column">{formatDate(inv.doc_date)}</td>
                     <td className="text-right tabular-nums">
                       {formatCurrency(Number(inv.total_amount) || 0)}
                     </td>

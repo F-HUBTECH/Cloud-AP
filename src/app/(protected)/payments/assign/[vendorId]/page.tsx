@@ -350,7 +350,7 @@ export default function AssignPaymentPage() {
                     <Check className="mx-auto h-4 w-4" />
                   </th>
                   <th>Doc Number</th>
-                  <th>Date</th>
+                  <th className="date-column">Date</th>
                   <th>Invoice No.</th>
                   <th className="text-right">Total Amount</th>
                   <th className="text-right">Paid</th>
@@ -383,7 +383,7 @@ export default function AssignPaymentPage() {
                         />
                       </td>
                       <td className="font-medium">{inv.doc_number}</td>
-                      <td>{formatDate(inv.doc_date)}</td>
+                      <td className="date-column">{formatDate(inv.doc_date)}</td>
                       <td className="text-muted-foreground">
                         {inv.inv_number ?? "-"}
                       </td>
