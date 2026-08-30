@@ -73,7 +73,7 @@ export function ApprovalQueue({ initialItems }: { initialItems: PendingApprovalI
               <th>Requested By</th>
               <th>Requested At</th>
               <th className="text-right">Amount</th>
-              <th className="text-right">Actions</th>
+              <th className="center-column">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -84,8 +84,8 @@ export function ApprovalQueue({ initialItems }: { initialItems: PendingApprovalI
                 <td>{item.requestedBy}</td>
                 <td>{formatDate(item.requestedAt)}</td>
                 <td className="text-right tabular-nums">{formatCurrency(item.amount)}</td>
-                <td>
-                  <div className="flex justify-end gap-2">
+                <td className="center-column">
+                  <div className="flex justify-center gap-2">
                     <button type="button" className="btn-primary" onClick={() => openDecision(item, "approve")}>
                       <CheckCircle className="h-4 w-4" />Approve
                     </button>
