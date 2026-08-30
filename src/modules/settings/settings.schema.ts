@@ -83,6 +83,11 @@ export const deleteSchema = z.object({
   id: z.string().uuid(),
 });
 
+const configIntegerFlagSchema = z.preprocess(
+  (value) => (typeof value === "boolean" ? (value ? 1 : 0) : value),
+  z.number().int().min(0).max(1).optional().nullable()
+);
+
 export const configSchema = z.object({
   company_code: z.string().max(20).optional().nullable(),
   company_name_en: z.string().max(200).optional().nullable(),
@@ -104,22 +109,22 @@ export const configSchema = z.object({
   default_lang: z.string().max(10).optional().nullable(),
   currency: z.string().max(10).optional().nullable(),
   auto_doc_no: z.boolean().optional().nullable(),
-  vc_auto: z.boolean().optional().nullable(),
+  vc_auto: configIntegerFlagSchema,
   vc_format1: z.string().max(10).optional().nullable(),
   vc_format2: z.string().max(10).optional().nullable(),
   vc_fix_for: z.number().int().optional().nullable(),
   vc_for_len: z.number().int().optional().nullable(),
-  dr_auto: z.boolean().optional().nullable(),
+  dr_auto: configIntegerFlagSchema,
   dr_format1: z.string().max(10).optional().nullable(),
   dr_format2: z.string().max(10).optional().nullable(),
   dr_fix_for: z.number().int().optional().nullable(),
   dr_for_len: z.number().int().optional().nullable(),
-  pd_auto: z.boolean().optional().nullable(),
+  pd_auto: configIntegerFlagSchema,
   pd_format1: z.string().max(10).optional().nullable(),
   pd_format2: z.string().max(10).optional().nullable(),
   pd_fix_for: z.number().int().optional().nullable(),
   pd_for_len: z.number().int().optional().nullable(),
-  dp_auto: z.boolean().optional().nullable(),
+  dp_auto: configIntegerFlagSchema,
   dp_format1: z.string().max(10).optional().nullable(),
   dp_format2: z.string().max(10).optional().nullable(),
   dp_fix_for: z.number().int().optional().nullable(),

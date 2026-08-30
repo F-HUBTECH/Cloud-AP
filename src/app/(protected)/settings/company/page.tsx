@@ -193,7 +193,12 @@ export default function CompanySettingsPage() {
     setSuccess(null);
 
     try {
-      await updateConfig(form);
+      const result = await updateConfig(form);
+      if (result && result.success === false) {
+        throw new Error(
+          typeof result.error === "string" ? result.error : "Validation failed"
+        );
+      }
       setSuccess("Company settings saved successfully.");
       await fetchConfig();
     } catch (err) {
