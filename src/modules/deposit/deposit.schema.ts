@@ -13,7 +13,7 @@ export const depositItemSchema = z.object({
 export const depositCreateSchema = z.object({
   docNumber: z.string().min(1).max(20).optional(),
   depositDate: z.string().min(1, "Deposit date is required"),
-  supplierCode: z.string().min(1, "Supplier code is required").max(5),
+  supplierCode: z.string().min(1, "Supplier code is required").max(20),
   supplierId: z.string().uuid().optional(),
   dueDate: z.string().optional().default(""),
   amount: z.number().min(0.01, "Amount must be greater than zero"),
@@ -21,7 +21,7 @@ export const depositCreateSchema = z.object({
   vatPercent: z.number().min(0).max(1).default(0),
   poNumber: z.string().max(20).optional().default(""),
   remark: z.string().max(100).optional().default(""),
-  payCode: z.string().max(10).optional().default(""),
+  payCode: z.string().max(5).optional().default(""),
   paidBy: z.string().max(100).optional().default(""),
   chequeNumber: z.string().max(50).optional().default(""),
   chequeDate: z.string().optional().default(""),

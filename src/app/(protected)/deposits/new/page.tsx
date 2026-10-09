@@ -15,11 +15,17 @@ interface VendorOption {
   name_th: string | null;
 }
 
+interface GlAccountOption {
+  code: string;
+  name: string;
+}
+
 export default function NewDepositPage() {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [vendors, setVendors] = useState<VendorOption[]>([]);
+  const [glAccounts, setGlAccounts] = useState<GlAccountOption[]>([]);
 
   const [form, setForm] = useState({
     doc_date: new Date().toISOString().slice(0, 10),
@@ -29,17 +35,28 @@ export default function NewDepositPage() {
     po_number: "",
     payment_code: "",
     remark: "",
+    gl_account: "",
   });
 
   useEffect(() => {
     async function fetchVendors() {
       const supabase = createClient();
-      const { data } = await supabase
+      const { data, error: vendorError } = await supabase
         .from("vendors")
         .select("id, code, name_en, name_th")
         .eq("is_active", true)
         .order("code");
       if (data) setVendors(data as VendorOption[]);
+      const { data: accountData, error: accountError } = await supabase
+        .from("gl_accounts")
+        .select("code, name")
+        .eq("is_active", true)
+        .eq("account_type", "detail")
+        .order("code");
+      if (accountData) setGlAccounts(accountData as GlAccountOption[]);
+      if (vendorError || accountError) {
+        setError(vendorError?.message ?? accountError?.message ?? "Failed to load form options");
+      }
     }
     fetchVendors();
   }, []);
@@ -64,6 +81,11 @@ export default function NewDepositPage() {
         return;
       }
 
+      if (!glAccounts.some((account) => account.code === form.gl_account)) {
+        setError("Please select a GL account");
+        return;
+      }
+
       const formData: DepositFormData = {
         depositDate: form.doc_date,
         supplierCode: selectedVendor.code,
@@ -73,12 +95,22 @@ export default function NewDepositPage() {
         poNumber: form.po_number || undefined,
         remark: form.remark || undefined,
         payCode: form.payment_code || undefined,
-        items: [],
+        items: [{
+          glAccount: form.gl_account,
+          description: form.remark || undefined,
+          drAmount: depositAmount,
+          crAmount: 0,
+        }],
       };
 
       const result = await createDeposit(formData);
       if (!result.success) {
-        setError(result.error ?? "Failed to create deposit");
+        const details = result.details
+          ? Object.entries(result.details)
+              .map(([field, messages]) => `${field}: ${messages?.join(", ")}`)
+              .join("; ")
+          : "";
+        setError(details || result.error || "Failed to create deposit");
         return;
       }
 
@@ -105,7 +137,7 @@ export default function NewDepositPage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+          <div role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
             {error}
           </div>
         )}
@@ -167,6 +199,27 @@ export default function NewDepositPage() {
               />
             </div>
             <div className="space-y-2">
+              <label htmlFor="gl_account" className="label-text">
+                Deposit GL Account *
+              </label>
+              <select
+                id="gl_account"
+                value={form.gl_account}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, gl_account: e.target.value }))
+                }
+                className="input-field"
+                required
+              >
+                <option value="">Select a GL account...</option>
+                {glAccounts.map((account) => (
+                  <option key={account.code} value={account.code}>
+                    {account.code} - {account.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
               <label htmlFor="deposit_vat" className="label-text">
                 Deposit VAT
               </label>
@@ -193,7 +246,7 @@ export default function NewDepositPage() {
                   setForm((f) => ({ ...f, po_number: e.target.value }))
                 }
                 className="input-field"
-                maxLength={30}
+                maxLength={20}
               />
             </div>
             <div className="space-y-2">
@@ -207,7 +260,7 @@ export default function NewDepositPage() {
                   setForm((f) => ({ ...f, payment_code: e.target.value }))
                 }
                 className="input-field"
-                maxLength={10}
+                maxLength={5}
               />
             </div>
           </div>
@@ -223,6 +276,7 @@ export default function NewDepositPage() {
               }
               className="input-field min-h-[80px]"
               rows={2}
+              maxLength={100}
             />
           </div>
         </div>
