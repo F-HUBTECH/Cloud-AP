@@ -147,7 +147,7 @@ class CheckAccountService {
       const totalAmount = Number(v.total_amount) || 0;
       const totalPayment = Number(v.total_payment) || 0;
       const openAmount = Number(v.open_amount) || 0;
-      const balance = totalAmount - totalPayment + openAmount;
+      const balance = openAmount;
 
       return {
         code: v.code as string,

@@ -1,6 +1,7 @@
 import { createServerClient } from "@/lib/supabase/server";
 import { AppError } from "@/lib/errors";
 import { roundAmount } from "@/lib/utils/format";
+import { getVendorBalancePeriod, getVendorPeriodBalance } from "@/modules/vendor/vendor-balance";
 import type { APAgingReport, APAgingItem, VendorCardReport, VendorCardTransaction, DetailLedgerReport, DetailLedgerEntry, DashboardStats, RecentTransaction, APAgingParams, VendorCardParams, DetailLedgerParams, PaymentRegisterReport, PaymentRegisterItem, PaymentRegisterParams, InvoiceRegisterReport, InvoiceRegisterItem, InvoiceRegisterParams, VendorBalanceReport, VendorBalanceItem } from "./report.types";
 
 class ReportService {
@@ -475,31 +476,29 @@ class ReportService {
 
   async getVendorBalance(): Promise<VendorBalanceReport> {
     const supabase = await this.getClient();
+    const period = await getVendorBalancePeriod();
 
     const { data, error } = await supabase
       .from("vendors")
-      .select("code, name_en, name_th, total_amount, total_payment, open_amount")
+      .select("id, code, name_en, name_th")
       .eq("is_active", true)
       .order("code");
 
     if (error) throw new AppError(error.message);
 
-    const items: VendorBalanceItem[] = (data ?? []).map((row: Record<string, unknown>) => {
-      const totalAmount = Number(row.total_amount) || 0;
-      const totalPayment = Number(row.total_payment) || 0;
-      const openAmount = Number(row.open_amount) || 0;
-      const balance = totalAmount - totalPayment + openAmount;
+    const items: VendorBalanceItem[] = await Promise.all((data ?? []).map(async (row) => {
+      const summary = await getVendorPeriodBalance(row.id, period.year, period.month);
 
       return {
         code: row.code as string,
         name_en: row.name_en as string,
         name_th: row.name_th as string | null,
-        totalAmount: roundAmount(totalAmount),
-        totalPayment: roundAmount(totalPayment),
-        openAmount: roundAmount(openAmount),
-        balance: roundAmount(balance),
+        totalAmount: roundAmount(Number(summary.invoiced)),
+        totalPayment: roundAmount(Number(summary.paid)),
+        openAmount: roundAmount(Number(summary.opening_balance)),
+        balance: roundAmount(Number(summary.outstanding)),
       };
-    });
+    }));
 
     return {
       items,

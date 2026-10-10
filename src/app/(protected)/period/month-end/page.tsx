@@ -85,7 +85,7 @@ export default function MonthEndPage() {
           total_amount: Number(v.total_amount) || 0,
           total_payment: Number(v.total_payment) || 0,
           open_amount: Number(v.open_amount) || 0,
-          balance: (Number(v.total_amount) || 0) - (Number(v.total_payment) || 0),
+          balance: Number(v.open_amount) || 0,
         }))
       );
     }

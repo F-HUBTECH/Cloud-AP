@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getVendorBalancePeriod, getVendorPeriodBalance } from "@/modules/vendor/vendor-balance";
 
 interface VendorPageProps {
   params: Promise<{ id: string }>;
@@ -58,10 +59,13 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
   }
 
   const invoices = await getVendorInvoices(id);
-  const balance = (Number(vendor.total_amount) || 0) - (Number(vendor.total_payment) || 0);
+  const period = await getVendorBalancePeriod();
+  const summary = await getVendorPeriodBalance(id, period.year, period.month);
+  const balance = Number(summary.outstanding);
+  const payable = Number(summary.opening_balance) + Number(summary.invoiced) - Number(summary.debit_notes);
   const paidRatio =
-    Number(vendor.total_amount) > 0
-      ? (Number(vendor.total_payment) || 0) / Number(vendor.total_amount)
+    payable > 0
+      ? Math.max(0, Math.min(1, Number(summary.paid) / payable))
       : 0;
 
   const vendorTypeLabel: Record<string, string> = {
@@ -210,19 +214,30 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
           <h2 className="text-sm font-semibold text-muted-foreground">
             Balance Summary
           </h2>
+          <p className="text-xs text-muted-foreground">Period {period.month}/{period.year}</p>
+
+          <div>
+            <p className="text-xs text-muted-foreground">Opening Balance</p>
+            <p className="text-xl font-semibold tabular-nums">{formatCurrency(Number(summary.opening_balance))}</p>
+          </div>
 
           <div>
             <p className="text-xs text-muted-foreground">Total Invoiced</p>
             <p className="text-2xl font-bold tabular-nums">
-              {formatCurrency(Number(vendor.total_amount) || 0)}
+              {formatCurrency(Number(summary.invoiced))}
             </p>
           </div>
 
           <div>
             <p className="text-xs text-muted-foreground">Total Paid</p>
             <p className="text-xl font-semibold tabular-nums">
-              {formatCurrency(Number(vendor.total_payment) || 0)}
+              {formatCurrency(Number(summary.paid))}
             </p>
+          </div>
+
+          <div>
+            <p className="text-xs text-muted-foreground">Debit / Credit Notes</p>
+            <p className="text-xl font-semibold tabular-nums">{formatCurrency(Number(summary.debit_notes))}</p>
           </div>
 
           {/* Paid progress bar */}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { getVendorBalanceReport } from "@/modules/report/report.actions";
 import { formatCurrency } from "@/lib/utils/format";
 import { Loader2 } from "lucide-react";
 
@@ -20,36 +20,19 @@ export default function VendorBalancePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [hasRun, setHasRun] = useState(false);
 
-  const supabase = createClient();
-
   async function runReport() {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("vendors")
-        .select("code, name_en, name_th, total_amount, total_payment, open_amount")
-        .eq("is_active", true)
-        .order("code");
-
-      if (error) throw error;
-
-      const round = (n: number) => Math.round(n * 100) / 100;
-
-      setVendors((data ?? []).map((v: Record<string, unknown>) => {
-        const totalAmount = Number(v.total_amount) || 0;
-        const totalPayment = Number(v.total_payment) || 0;
-        const openAmount = Number(v.open_amount) || 0;
-        const balance = totalAmount - totalPayment + openAmount;
-        return {
-          code: v.code as string,
-          name_en: v.name_en as string,
-          name_th: v.name_th as string | null,
-          total_amount: round(totalAmount),
-          total_payment: round(totalPayment),
-          open_amount: round(openAmount),
-          balance: round(balance),
-        };
-      }));
+      const report = await getVendorBalanceReport();
+      setVendors(report.items.map((v) => ({
+        code: v.code,
+        name_en: v.name_en,
+        name_th: v.name_th,
+        total_amount: v.totalAmount,
+        total_payment: v.totalPayment,
+        open_amount: v.openAmount,
+        balance: v.balance,
+      })));
       setHasRun(true);
     } catch (err) {
       console.error(err);
@@ -69,7 +52,7 @@ export default function VendorBalancePage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Vendor Balance Summary</h1>
-        <p className="text-muted-foreground">Compare vendor balances across all periods</p>
+        <p className="text-muted-foreground">Vendor balances for the current accounting period</p>
       </div>
 
       <div className="card p-4">

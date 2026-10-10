@@ -59,7 +59,7 @@ export default function YearEndPage() {
 
     const { data: vendors } = await supabase
       .from("vendors")
-      .select("code, name_en, name_th, total_amount, total_payment")
+      .select("code, name_en, name_th, total_amount, total_payment, open_amount")
       .eq("is_active", true)
       .order("code");
 
@@ -71,7 +71,7 @@ export default function YearEndPage() {
           name_th: v.name_th,
           total_amount: Number(v.total_amount) || 0,
           total_payment: Number(v.total_payment) || 0,
-          balance: (Number(v.total_amount) || 0) - (Number(v.total_payment) || 0),
+          balance: Number(v.open_amount) || 0,
         }))
       );
     }

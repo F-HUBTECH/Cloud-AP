@@ -2626,6 +2626,16 @@ export type Database = {
         Args: { p_vendor_code: string }
         Returns: undefined
       }
+      vendor_period_balance: {
+        Args: { p_vendor_id: string; p_year: string; p_month: string }
+        Returns: {
+          opening_balance: number
+          invoiced: number
+          debit_notes: number
+          paid: number
+          outstanding: number
+        }[]
+      }
       reject_entity: {
         Args: { p_approval_id: string; p_comment?: string }
         Returns: boolean

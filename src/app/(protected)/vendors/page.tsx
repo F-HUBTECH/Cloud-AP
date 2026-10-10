@@ -41,7 +41,7 @@ async function getVendors(
   let query = supabase
     .from("vendors")
     .select(
-      "id, code, name_en, name_th, tel, email, is_active, total_amount, total_payment",
+      "id, code, name_en, name_th, tel, email, is_active, total_amount, total_payment, open_amount",
       { count: "exact" }
     )
     .order("code")
@@ -65,7 +65,7 @@ async function getVendors(
     ...v,
     total_amount: Number(v.total_amount) || 0,
     total_payment: Number(v.total_payment) || 0,
-    balance: (Number(v.total_amount) || 0) - (Number(v.total_payment) || 0),
+    balance: Number(v.open_amount) || 0,
   }));
 
   return { vendors, total: count ?? 0 };

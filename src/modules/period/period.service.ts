@@ -1,6 +1,7 @@
 import { createServerClient } from "@/lib/supabase/server";
 import { NotFoundError, AppError } from "@/lib/errors";
 import { logAudit } from "@/lib/utils/audit";
+import { getVendorPeriodBalance } from "@/modules/vendor/vendor-balance";
 
 export interface PeriodCloseResult {
   periodId: string;
@@ -32,10 +33,11 @@ export class PeriodService {
     const periodYear = String(period.period_year);
     const periodMonth = String(period.period_month).padStart(2, "0");
 
-    const { data: validationMsg } = await supabase.rpc("validate_period_can_close", {
+    const { data: validationMsg, error: validationError } = await supabase.rpc("validate_period_can_close", {
       p_year: periodYear,
       p_month: periodMonth,
     });
+    if (validationError) throw new AppError(validationError.message, "PERIOD_ERROR");
 
     if (validationMsg) {
       throw new AppError(`Cannot close period: ${validationMsg}`, "PERIOD_HAS_PENDING", 422);
@@ -43,7 +45,7 @@ export class PeriodService {
 
     const { data: vendors, error: vendorsError } = await supabase
       .from("vendors")
-      .select("id, code, total_amount, total_payment, open_amount")
+      .select("id, code")
       .eq("is_active", true);
 
     if (vendorsError) throw new AppError(`Failed to fetch vendors: ${vendorsError.message}`, "PERIOD_ERROR");
@@ -51,11 +53,7 @@ export class PeriodService {
     let balancesCreated = 0;
 
     for (const vendor of vendors ?? []) {
-      const openAmount = Number(vendor.open_amount) || 0;
-      const totalAmount = Number(vendor.total_amount) || 0;
-      const totalPayment = Number(vendor.total_payment) || 0;
-      const invAmount = totalAmount - totalPayment + openAmount;
-      const balance = totalAmount - totalPayment;
+      const summary = await getVendorPeriodBalance(vendor.id, periodYear, periodMonth);
 
       const { error: upsertError } = await supabase
         .from("vendor_monthly_balances")
@@ -64,17 +62,19 @@ export class PeriodService {
             vendor_id: vendor.id,
             period_year: periodYear,
             period_month: periodMonth,
-            open_amount: openAmount,
-            inv_amount: invAmount > 0 ? invAmount : 0,
-            dr_amount: 0,
+            open_amount: summary.opening_balance,
+            open_balance: summary.opening_balance,
+            inv_amount: summary.invoiced,
+            dr_amount: summary.debit_notes,
             apply_amount: 0,
-            paid_amount: totalPayment > 0 ? totalPayment : 0,
-            balance: balance,
+            paid_amount: summary.paid,
+            balance: summary.outstanding,
           },
           { onConflict: "vendor_id,period_year,period_month" }
         );
 
-      if (!upsertError) balancesCreated++;
+      if (upsertError) throw new AppError(`Failed to save vendor balance: ${upsertError.message}`, "PERIOD_ERROR");
+      balancesCreated++;
     }
 
     const { error: closeError } = await supabase
@@ -113,7 +113,8 @@ export class PeriodService {
       .from("periods")
       .select("id, period_year, period_month, closed")
       .eq("period_year", year)
-      .eq("closed", false);
+      .eq("closed", false)
+      .order("period_month", { ascending: true });
 
     if (periodsError) throw new AppError(`Failed to fetch periods: ${periodsError.message}`, "PERIOD_ERROR");
     if (!periods || periods.length === 0) throw new AppError(`No open periods found for year ${year}`, "PERIOD_ERROR");
