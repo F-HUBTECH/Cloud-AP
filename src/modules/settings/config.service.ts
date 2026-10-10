@@ -21,6 +21,8 @@ export interface Config {
   vat_percent: number | null;
   wht_percent: number | null;
   default_lang: string | null;
+  period_month: string | null;
+  period_year: string | null;
   currency: string | null;
   auto_doc_no: boolean | null;
   vc_auto: boolean | null;
@@ -87,6 +89,8 @@ export interface ConfigFormData {
   vat_percent?: number | null;
   wht_percent?: number | null;
   default_lang?: string | null;
+  period_month?: string | null;
+  period_year?: string | null;
   currency?: string | null;
   auto_doc_no?: boolean | null;
   vc_auto?: boolean | null;

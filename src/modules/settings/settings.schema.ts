@@ -107,6 +107,8 @@ export const configSchema = z.object({
   vat_percent: z.number().min(0).max(100).optional().nullable(),
   wht_percent: z.number().min(0).max(100).optional().nullable(),
   default_lang: z.string().max(10).optional().nullable(),
+  period_month: z.string().regex(/^(0[1-9]|1[0-2])$/, "Period month must be 01–12").optional().nullable(),
+  period_year: z.string().regex(/^[1-9]\d{3}$/, "Period year must be a four-digit year").optional().nullable(),
   currency: z.string().max(10).optional().nullable(),
   auto_doc_no: z.boolean().optional().nullable(),
   vc_auto: configIntegerFlagSchema,

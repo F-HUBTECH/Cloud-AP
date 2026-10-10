@@ -25,6 +25,8 @@ interface Config {
   vat_percent: number | null;
   wht_percent: number | null;
   default_lang: string | null;
+  period_month: string | null;
+  period_year: string | null;
   currency: string | null;
   auto_doc_no: boolean | null;
   vc_auto: boolean | null;
@@ -93,6 +95,8 @@ const defaultConfig: ConfigFormData = {
   vat_percent: 0,
   wht_percent: 0,
   default_lang: "en",
+  period_month: null,
+  period_year: null,
   currency: "THB",
   auto_doc_no: false,
   vc_auto: false,
@@ -196,7 +200,8 @@ export default function CompanySettingsPage() {
       const result = await updateConfig(form);
       if (result && result.success === false) {
         throw new Error(
-          typeof result.error === "string" ? result.error : "Validation failed"
+          Object.values(result.details ?? {}).flat().join("; ") ||
+          (typeof result.error === "string" ? result.error : "Validation failed")
         );
       }
       setSuccess("Company settings saved successfully.");
@@ -461,6 +466,35 @@ export default function CompanySettingsPage() {
                   <option value="en">English</option>
                   <option value="th">Thai</option>
                 </select>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="period_month" className="label-text">Current Period Month</label>
+                <select
+                  id="period_month"
+                  value={form.period_month ?? ""}
+                  onChange={(e) => updateField("period_month", e.target.value || null)}
+                  className="input-field"
+                >
+                  <option value="">Not set</option>
+                  {Array.from({ length: 12 }, (_, index) => {
+                    const month = String(index + 1).padStart(2, "0");
+                    return <option key={month} value={month}>{month}</option>;
+                  })}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="period_year" className="label-text">Current Period Year (CE)</label>
+                <input
+                  id="period_year"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[1-9][0-9]{3}"
+                  maxLength={4}
+                  placeholder="2026"
+                  value={form.period_year ?? ""}
+                  onChange={(e) => updateField("period_year", e.target.value || null)}
+                  className="input-field"
+                />
               </div>
               <div className="space-y-2">
                 <label htmlFor="currency" className="label-text">Currency</label>
