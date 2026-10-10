@@ -266,6 +266,45 @@ export default function CompanySettingsPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        <div id="accounting-period" className="card p-6 space-y-4 scroll-mt-6">
+          <h2 className="text-lg font-semibold">Current Accounting Period / งวดบัญชีปัจจุบัน</h2>
+          <p className="text-sm text-muted-foreground">ตั้งค่าเดือนและปี ค.ศ. ของงวดบัญชีก่อนทำ Month End</p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <label htmlFor="period_month" className="label-text">Current Period Month</label>
+              <select
+                id="period_month"
+                value={form.period_month ?? ""}
+                onChange={(e) => updateField("period_month", e.target.value || null)}
+                className="input-field"
+              >
+                <option value="">Not set</option>
+                {Array.from({ length: 12 }, (_, index) => {
+                  const month = String(index + 1).padStart(2, "0");
+                  return <option key={month} value={month}>{month}</option>;
+                })}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="period_year" className="label-text">Current Period Year (CE)</label>
+              <input
+                id="period_year"
+                type="text"
+                inputMode="numeric"
+                pattern="[1-9][0-9]{3}"
+                maxLength={4}
+                placeholder="2026"
+                value={form.period_year ?? ""}
+                onChange={(e) => updateField("period_year", e.target.value || null)}
+                className="input-field"
+              />
+            </div>
+          </div>
+          <button type="submit" className="btn-primary" disabled={saving || !config}>
+            {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+            <Save className="h-4 w-4" /> Save Settings
+          </button>
+        </div>
         {activeTab === "company" && (
           <div className="card p-6 space-y-4">
             <h2 className="text-lg font-semibold">Company Information</h2>
@@ -466,35 +505,6 @@ export default function CompanySettingsPage() {
                   <option value="en">English</option>
                   <option value="th">Thai</option>
                 </select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="period_month" className="label-text">Current Period Month</label>
-                <select
-                  id="period_month"
-                  value={form.period_month ?? ""}
-                  onChange={(e) => updateField("period_month", e.target.value || null)}
-                  className="input-field"
-                >
-                  <option value="">Not set</option>
-                  {Array.from({ length: 12 }, (_, index) => {
-                    const month = String(index + 1).padStart(2, "0");
-                    return <option key={month} value={month}>{month}</option>;
-                  })}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="period_year" className="label-text">Current Period Year (CE)</label>
-                <input
-                  id="period_year"
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[1-9][0-9]{3}"
-                  maxLength={4}
-                  placeholder="2026"
-                  value={form.period_year ?? ""}
-                  onChange={(e) => updateField("period_year", e.target.value || null)}
-                  className="input-field"
-                />
               </div>
               <div className="space-y-2">
                 <label htmlFor="currency" className="label-text">Currency</label>

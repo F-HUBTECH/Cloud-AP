@@ -35,6 +35,9 @@ const settingsGroups = [
   {
     title: "System",
     items: [
+      { label: "Current Accounting Period", href: "/settings/company#accounting-period", icon: Calendar, description: "ตั้งค่าเดือนและปีของงวดบัญชีปัจจุบัน" },
+      { label: "Month End", href: "/period/month-end", icon: Calendar, description: "Save balances and close the current month" },
+      { label: "Year End", href: "/period/year-end", icon: Calendar, description: "Archive annual balances and carry forward to next year" },
       { label: "Periods", href: "/settings/period", icon: Calendar, description: "Accounting period management and closing" },
       { label: "Users", href: "/settings/users", icon: Users, description: "User management and access control" },
     ],

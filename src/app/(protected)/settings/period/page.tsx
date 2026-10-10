@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { closeMonth, reopenPeriod } from "@/modules/period/period.actions";
@@ -103,6 +104,14 @@ export default function PeriodPage() {
             </option>
           ))}
         </select>
+      </div>
+
+      <div className="card p-4 flex flex-wrap items-center gap-3">
+        <Link href="/settings/company#accounting-period" className="btn-primary">
+          ตั้งค่าเดือน–ปีงวดบัญชี
+        </Link>
+        <Link href="/period/month-end" className="btn-outline">Month End</Link>
+        <Link href="/period/year-end" className="btn-outline">Year End</Link>
       </div>
 
       {error && (

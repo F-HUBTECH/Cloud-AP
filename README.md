@@ -211,7 +211,7 @@ npm start
 
 ### Accounting period closing
 
-Set the current accounting month/year in **Settings → Company → Defaults**.
+Set the current accounting month/year in **Settings → Company → Current Accounting Period**.
 **Month End** saves vendor balances (including inactive vendors), checks unfinished
 transactions, closes the current period and advances to the next defined month.
 The final month stays selected until **Year End**. Year End requires all monthly

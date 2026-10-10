@@ -20,6 +20,7 @@ import {
   ClipboardCheck,
   Banknote,
   Receipt,
+  Calendar,
 } from "lucide-react";
 
 interface NavItem {
@@ -97,6 +98,18 @@ const ALL_NAV_ITEMS: NavItem[] = [
     href: "/reports",
     icon: BookOpen,
     moduleCode: MODULE_CODES.REPORT,
+  },
+  {
+    label: "Month End",
+    href: "/period/month-end",
+    icon: Calendar,
+    adminOnly: true,
+  },
+  {
+    label: "Year End",
+    href: "/period/year-end",
+    icon: Calendar,
+    adminOnly: true,
   },
   {
     label: "Settings",
