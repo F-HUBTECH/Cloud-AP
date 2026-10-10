@@ -14,6 +14,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      year_end_runs: {
+        Row: { id: string; period_year: string; vendor_snapshots: Json; monthly_snapshots: Json; closed_at: string; closed_by: string | null }
+        Insert: { id?: string; period_year: string; vendor_snapshots: Json; monthly_snapshots: Json; closed_at?: string; closed_by?: string | null }
+        Update: { id?: string; period_year?: string; vendor_snapshots?: Json; monthly_snapshots?: Json; closed_at?: string; closed_by?: string | null }
+        Relationships: [{ foreignKeyName: "year_end_runs_closed_by_fkey"; columns: ["closed_by"]; isOneToOne: false; referencedRelation: "app_users"; referencedColumns: ["id"] }]
+      }
       ap_types: {
         Row: {
           code: string
@@ -2558,6 +2564,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      close_ap_month: { Args: { p_period_id: string }; Returns: Json }
+      close_ap_year: { Args: { p_year: string }; Returns: Json }
+      reopen_ap_period: { Args: { p_period_id: string }; Returns: undefined }
+      ap_period_summary: {
+        Args: { p_year: string; p_month?: string | null }
+        Returns: { code: string; name_en: string; name_th: string | null; total_amount: number; total_payment: number; balance: number }[]
+      }
       approve_entity: {
         Args: { p_approval_id: string; p_comment?: string }
         Returns: boolean

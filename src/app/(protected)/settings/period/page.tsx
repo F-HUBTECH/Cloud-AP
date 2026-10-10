@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { closeMonth, reopenPeriod } from "@/modules/period/period.actions";
 import { cn } from "@/lib/utils/cn";
 import { formatDate } from "@/lib/utils/format";
 import { Lock, Unlock, Loader2 } from "lucide-react";
@@ -70,13 +71,10 @@ export default function PeriodPage() {
     setError(null);
 
     try {
-      const newStatus = confirmAction.action === "close";
-      const { error: updateError } = await supabase
-        .from("periods")
-        .update({ closed: newStatus })
-        .eq("id", confirmAction.id);
-
-      if (updateError) throw updateError;
+      const result = confirmAction.action === "close"
+        ? await closeMonth({ periodId: confirmAction.id })
+        : await reopenPeriod({ periodId: confirmAction.id });
+      if (!result.success) throw new Error(result.error);
       setConfirmAction(null);
       await fetchPeriods();
     } catch (err) {

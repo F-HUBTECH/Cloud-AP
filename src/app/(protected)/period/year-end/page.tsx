@@ -35,6 +35,7 @@ export default function YearEndPage() {
   const [periods, setPeriods] = useState<Period[]>([]);
   const [vendorBalances, setVendorBalances] = useState<VendorBalance[]>([]);
   const [loading, setLoading] = useState(true);
+  const [yearCompleted, setYearCompleted] = useState(false);
   const [closing, setClosing] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [closeDialog, setCloseDialog] = useState(false);
@@ -45,6 +46,10 @@ export default function YearEndPage() {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+    const { data: run, error: runError } = await supabase.from("year_end_runs")
+      .select("id").eq("period_year", String(yearFilter)).maybeSingle();
+    setYearCompleted(!!run);
+    if (runError) setMessage({ type: "error", text: runError.message });
     const { data, error } = await supabase
       .from("periods")
       .select("id, period_year, period_month, closed")
@@ -57,23 +62,14 @@ export default function YearEndPage() {
       setPeriods((data as Period[]) ?? []);
     }
 
-    const { data: vendors } = await supabase
-      .from("vendors")
-      .select("code, name_en, name_th, total_amount, total_payment, open_amount")
-      .eq("is_active", true)
-      .order("code");
-
-    if (vendors) {
-      setVendorBalances(
-        vendors.map((v) => ({
-          code: v.code,
-          name_en: v.name_en,
-          name_th: v.name_th,
-          total_amount: Number(v.total_amount) || 0,
-          total_payment: Number(v.total_payment) || 0,
-          balance: Number(v.open_amount) || 0,
-        }))
-      );
+    const { data: vendors, error: balanceError } = await supabase.rpc("ap_period_summary", {
+      p_year: String(yearFilter),
+    });
+    if (balanceError) {
+      setVendorBalances([]);
+      setMessage({ type: "error", text: balanceError.message });
+    } else {
+      setVendorBalances((vendors ?? []) as VendorBalance[]);
     }
     setLoading(false);
   }, [yearFilter, supabase]);
@@ -100,7 +96,7 @@ export default function YearEndPage() {
       const data = result.data;
       setMessage({
         type: "success",
-        text: `Year ${yearFilter} closed successfully. ${data.periodsClosed} periods closed, ${data.vendorsProcessed} vendors processed.${data.nextYearCreated ? ` Year ${yearFilter + 1} periods created.` : ""}`,
+        text: `Year ${yearFilter} closed successfully. ${data.vendorsProcessed} vendor balances archived and carried forward.${data.nextYearCreated ? ` Year ${yearFilter + 1} periods created.` : ""}`,
       });
 
       setCloseDialog(false);
@@ -117,7 +113,7 @@ export default function YearEndPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Year-End Closing</h1>
-          <p className="text-muted-foreground">Close all periods in a fiscal year and carry forward balances</p>
+          <p className="text-muted-foreground">Archive the fiscal year and carry forward balances after all Month End processes</p>
         </div>
         <select
           value={yearFilter}
@@ -157,7 +153,7 @@ export default function YearEndPage() {
               </tbody>
             </table>
             <div className="mt-4 text-sm text-muted-foreground">
-              {allClosed ? "All periods are closed." : `${openCount} open period(s), ${periods.length - openCount} closed.`}
+              {yearCompleted ? "Year End completed; balances carried forward." : allClosed ? "All periods are closed. Ready for Year End." : `${openCount} open period(s), ${periods.length - openCount} closed.`}
             </div>
           </div>
         )}
@@ -167,7 +163,7 @@ export default function YearEndPage() {
         <h2 className="mb-4 text-lg font-semibold">Year-End Summary</h2>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-1">
-            <span className="label-text text-muted-foreground">Active Vendors</span>
+            <span className="label-text text-muted-foreground">Vendors</span>
             <p className="text-2xl font-bold">{vendorBalances.length}</p>
           </div>
           <div className="space-y-1">
@@ -185,17 +181,17 @@ export default function YearEndPage() {
         </div>
       </div>
 
-      {!allClosed && periods.length > 0 && (
+      {!yearCompleted && periods.length > 0 && (
         <div className="card p-6">
           <h2 className="mb-4 text-lg font-semibold">Close Year</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            This will close all remaining open periods, save monthly vendor balances, and create periods for the next fiscal year ({yearFilter + 1}).
+            Complete Month End for every period first. Year End archives vendor balances, carries the final balance into January, and changes the current period to January {yearFilter + 1}.
           </p>
           <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 mb-4 text-sm">
             <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
             <span>This action cannot be undone. Make sure all transactions for the year are posted.</span>
           </div>
-          <button onClick={() => setCloseDialog(true)} className="btn-destructive">
+          <button onClick={() => setCloseDialog(true)} className="btn-destructive" disabled={!allClosed || loading}>
             <Lock className="h-4 w-4" /> Close Fiscal Year {yearFilter}
           </button>
         </div>
@@ -206,7 +202,7 @@ export default function YearEndPage() {
           <DialogHeader>
             <DialogTitle>Close Fiscal Year {yearFilter}</DialogTitle>
             <DialogDescription>
-              This will close {openCount} open period(s), save vendor monthly balances, and create 12 new periods for {yearFilter + 1}. This cannot be undone.
+              This will archive year {yearFilter}, carry forward balances and create any missing periods for {yearFilter + 1}. The current period will become January {yearFilter + 1}.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

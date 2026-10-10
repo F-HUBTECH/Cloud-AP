@@ -70,26 +70,18 @@ export default function MonthEndPage() {
   }, [yearFilter, supabase]);
 
   const fetchBalances = useCallback(async () => {
-    const { data } = await supabase
-      .from("vendors")
-      .select("code, name_en, name_th, total_amount, total_payment, open_amount")
-      .eq("is_active", true)
-      .order("code");
-
-    if (data) {
-      setVendorBalances(
-        data.map((v) => ({
-          code: v.code,
-          name_en: v.name_en,
-          name_th: v.name_th,
-          total_amount: Number(v.total_amount) || 0,
-          total_payment: Number(v.total_payment) || 0,
-          open_amount: Number(v.open_amount) || 0,
-          balance: Number(v.open_amount) || 0,
-        }))
-      );
+    const period = periods.find((p) => p.id === selectedPeriod);
+    if (!period) { setVendorBalances([]); return; }
+    const { data, error } = await supabase.rpc("ap_period_summary", {
+      p_year: period.period_year, p_month: period.period_month,
+    });
+    if (error) {
+      setVendorBalances([]);
+      setMessage({ type: "error", text: error.message });
+    } else {
+      setVendorBalances((data ?? []) as VendorBalance[]);
     }
-  }, [supabase]);
+  }, [supabase, periods, selectedPeriod]);
 
   useEffect(() => {
     fetchData();
@@ -282,7 +274,7 @@ export default function MonthEndPage() {
           <DialogHeader>
             <DialogTitle>Close Period</DialogTitle>
             <DialogDescription>
-              This will calculate and save monthly balances for all vendors, then close the period. This action cannot be undone.
+              This will calculate and save monthly balances for all vendors, then close the period and advance the current accounting month. The final month remains selected until Year End.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

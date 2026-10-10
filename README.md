@@ -208,3 +208,20 @@ npm start
 | Invoice PDF | ไม่มี | Supabase Storage |
 | Realtime | ไม่มี | Supabase Realtime |
 | Report | FastReport .fr3 | Next.js (future) |
+
+### Accounting period closing
+
+Set the current accounting month/year in **Settings → Company → Defaults**.
+**Month End** saves vendor balances (including inactive vendors), checks unfinished
+transactions, closes the current period and advances to the next defined month.
+The final month stays selected until **Year End**. Year End requires all monthly
+closes and snapshots, archives annual vendor/monthly data in `year_end_runs`,
+carries balances to January, fills missing next-year periods, resets legacy annual
+buckets and advances the config to January. Each operation is one database
+transaction with an audit record and requires an active administrator.
+
+Reopening is allowed only for the latest closed period before Year End; it restores
+the current config to that period. Settings period actions use the same closing
+workflow. Apply `20261011000001_period_closing.sql` before deploying these changes.
+Run `npm run test:period-closing` and `npm run test:vendor-balance` to verify the
+PostgreSQL balance and closing logic locally; these tests do not close live periods.

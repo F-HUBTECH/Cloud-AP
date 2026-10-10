@@ -9,7 +9,7 @@ const closeMonthSchema = z.object({
 });
 
 const closeYearSchema = z.object({
-  year: z.string(),
+  year: z.string().regex(/^[1-9]\d{3}$/).refine((year) => Number(year) < 9999),
 });
 
 const reopenSchema = z.object({
