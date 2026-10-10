@@ -16,6 +16,7 @@ import {
   FileText,
 } from "lucide-react";
 import Link from "next/link";
+import { AccountLookup, TemplateLookup } from "@/components/vouchers/voucher-lookups";
 import { SubmitApprovalButton } from "./submit-approval-button";
 
 interface InvoiceDetail {
@@ -61,7 +62,6 @@ interface GlAccountOption {
   name: string;
 }
 
-interface DescriptionTemplate { id: string; description: string; }
 
 const STATUS_BADGE: Record<string, string> = {
   draft: "badge-info",
@@ -89,8 +89,8 @@ export default function VoucherDetailPage({
   const [invoice, setInvoice] = useState<InvoiceDetail | null>(null);
   const [vendors, setVendors] = useState<VendorOption[]>([]);
   const [glAccounts, setGlAccounts] = useState<GlAccountOption[]>([]);
-  const [templates, setTemplates] = useState<DescriptionTemplate[]>([]);
   const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
+  const [accountPickerLine, setAccountPickerLine] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
   const [header, setHeader] = useState({
@@ -194,11 +194,7 @@ export default function VoucherDetailPage({
       .eq("account_type", "detail")
       .order("code")
       .then(({ data }) => setGlAccounts((data ?? []) as GlAccountOption[]));
-    supabase
-      .from("voucher_description_templates")
-      .select("id, description")
-      .order("description")
-      .then(({ data }) => setTemplates((data ?? []) as DescriptionTemplate[]));
+
   }, []);
 
   const totalDr = lines.reduce((sum, l) => sum + (l.dr_amount || 0), 0);
@@ -543,7 +539,7 @@ export default function VoucherDetailPage({
             </div>
             {isEditing ? (
               <Field label="Remark">
-                <div className="space-y-2"><select aria-label="Description template" defaultValue="" onChange={(e) => { if (e.target.value) setHeader((h) => ({ ...h, remark: e.target.value })); e.target.value = ""; }} className="input-field"><option value="">Use template...</option>{templates.map((template) => <option key={template.id} value={template.description}>{template.description}</option>)}</select><textarea value={header.remark} onChange={(e) => setHeader((h) => ({ ...h, remark: e.target.value }))} onKeyDown={(e) => { if (e.key === "F12") { e.preventDefault(); setTemplatePickerOpen(true); } }} className="input-field min-h-[80px]" rows={2} /></div>
+                <div className="space-y-2"><button type="button" onClick={() => setTemplatePickerOpen(true)} className="btn-outline text-sm">Use Template… (F12)</button><textarea value={header.remark} onChange={(e) => setHeader((h) => ({ ...h, remark: e.target.value }))} onKeyDown={(e) => { if (e.key === "F12") { e.preventDefault(); setTemplatePickerOpen(true); } }} className="input-field min-h-[80px]" rows={2} /></div>
               </Field>
             ) : invoice.remark ? (
               <div>
@@ -616,7 +612,10 @@ export default function VoucherDetailPage({
                     {isEditing ? (
                       <>
                         <td>
-                          <input value={line.gl_account} onChange={(e) => updateLine(index, "gl_account", e.target.value)} className="input-field" placeholder="GL Account" maxLength={20} list="gl-account-options" />
+                        <div className="flex gap-2">
+                          <input value={line.gl_account} onChange={(e) => updateLine(index, "gl_account", e.target.value)} className="input-field" placeholder="GL Account" maxLength={20} list="gl-account-options" aria-label={`Account Code line ${line.line_no}`} onKeyDown={(e) => { if (e.key === "F12") { e.preventDefault(); setAccountPickerLine(index); } }} />
+                          <button type="button" className="btn-outline shrink-0" onClick={() => setAccountPickerLine(index)} aria-label={`Look up Account Code line ${line.line_no}`} title="Look up Account Code (F12)">…</button>
+                        </div>
                         </td>
                         <td>
                           <input value={line.description} onChange={(e) => updateLine(index, "description", e.target.value)} className="input-field" placeholder="Description" maxLength={200} />
@@ -699,11 +698,8 @@ export default function VoucherDetailPage({
           </div>
         )}
       </form>
-      {templatePickerOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-label="Description templates">
-          <div className="card w-full max-w-lg p-6"><div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-semibold">Description Templates</h2><button type="button" onClick={() => setTemplatePickerOpen(false)} className="btn-ghost">Close</button></div><div className="max-h-80 space-y-2 overflow-y-auto">{templates.length === 0 ? <p className="py-6 text-center text-muted-foreground">No templates found</p> : templates.map((template) => <button key={template.id} type="button" onClick={() => { setHeader((h) => ({ ...h, remark: template.description })); setTemplatePickerOpen(false); }} className="block w-full rounded-md border p-3 text-left text-sm hover:bg-accent">{template.description}</button>)}</div></div>
-        </div>
-      )}
+      {templatePickerOpen && <TemplateLookup onClose={() => setTemplatePickerOpen(false)} onSelect={(description) => { setHeader((h) => ({ ...h, remark: description })); setTemplatePickerOpen(false); }} />}
+      {accountPickerLine !== null && <AccountLookup accounts={glAccounts} onClose={() => setAccountPickerLine(null)} onSelect={(code) => { updateLine(accountPickerLine, "gl_account", code); setAccountPickerLine(null); }} />}
     </div>
   );
 }

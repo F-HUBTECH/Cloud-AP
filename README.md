@@ -225,3 +225,14 @@ the current config to that period. Settings period actions use the same closing
 workflow. Apply `20261011000001_period_closing.sql` before deploying these changes.
 Run `npm run test:period-closing` and `npm run test:vendor-balance` to verify the
 PostgreSQL balance and closing logic locally; these tests do not close live periods.
+
+### Voucher lookups (Delphi behavior)
+
+In a new or edited AP Voucher, **Use Template…** or F12 in **Remark** opens
+Description Template lookup. Search, select, press Enter or double-click a row
+to copy its description into Remark. Administrators can add, edit and delete
+these descriptions within the lookup dialog. Account codes are selected separately:
+click **…** or press F12 in a line's **GL Account** field, search by code/name,
+and select an active detail account. This fills the selected line's account code
+and description without changing its debit/credit amounts. No schema change is
+required for these lookup controls.
