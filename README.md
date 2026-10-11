@@ -2,7 +2,18 @@
 
 Next.js 15 App Router + Supabase (PostgreSQL + Auth + Storage) ระบบลูกหนี้การค้า
 
-คู่มือการใช้งาน: [HTML](user-guide.html) · [Markdown](USER_GUIDE.md)
+คู่มือการใช้งาน: เมนู **Manual** (`/manual`, ต้องเข้าสู่ระบบ) · [HTML](user-guide.html) · [Markdown](USER_GUIDE.md)
+
+## การอัปเดตคู่มือ
+
+แก้เนื้อหาใน `USER_GUIDE.md` ซึ่งเป็นแหล่งเดียวสำหรับหน้า `/manual` และไฟล์ HTML จากนั้นรัน:
+
+```bash
+npm run manual:generate  # สร้าง user-guide.html สำหรับเปิดอ่านหรือแชร์
+npm run manual:check     # ตรวจว่า HTML ตรงกับ Markdown ล่าสุด
+```
+
+หน้า Manual แสดงสารบัญอัตโนมัติจากหัวข้อระดับ `##` รองรับตารางและลิงก์ภายในระบบ ใช้เฉพาะ Markdown ที่ผู้พัฒนาตรวจสอบแล้ว ห้ามนำเนื้อหาจากผู้ใช้มา render ด้วยตัวช่วยนี้โดยตรง หน้าในแอปอัปเดตเมื่อ build/deploy โค้ดใหม่
 
 ## โครงสร้างโปรเจกต์
 

@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   ChevronRight,
   BookOpen,
+  BookMarked,
   ArrowRightLeft,
   Landmark,
   ClipboardCheck,
@@ -118,6 +119,11 @@ const ALL_NAV_ITEMS: NavItem[] = [
     moduleCode: MODULE_CODES.CONFIG,
     adminOnly: true,
   },
+  {
+    label: "Manual",
+    href: "/manual",
+    icon: BookMarked,
+  },
 ];
 
 export function Sidebar() {
@@ -165,7 +171,7 @@ export function Sidebar() {
         </Link>
       </div>
 
-      <nav className="flex-1 space-y-1 p-2">
+      <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto p-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive =

@@ -19,6 +19,7 @@ const routes = [
   ["/debit-notes", "Debit Notes"],
   ["/witholding-tax", "Withholding Tax Report"],
   ["/reports", "Reports"],
+  ["/manual", "Manual / คู่มือการใช้งาน"],
   ["/reports/aging", "AP Aging Report"],
   ["/reports/vendor-card", "Vendor Card Report"],
   ["/reports/detail-ledger", "Detail Ledger Report"],
