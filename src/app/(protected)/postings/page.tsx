@@ -1,11 +1,11 @@
 import { createServerClient } from "@/lib/supabase/server";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
-import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { Plus, Search, FileText, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 export const revalidate = 30;
+const POSTINGS_PAGE_SIZE = 12;
 
 interface InvoiceRow {
   id: string;
@@ -30,7 +30,7 @@ async function searchInvoices(
   page: number = 1
 ): Promise<{ invoices: InvoiceRow[]; total: number }> {
   const supabase = await createServerClient();
-  const pageSize = DEFAULT_PAGE_SIZE;
+  const pageSize = POSTINGS_PAGE_SIZE;
 
   let query = supabase
     .from("invoices")
@@ -105,7 +105,7 @@ export default async function PostingsPage({
   const page = Math.max(1, Number(params.page) || 1);
   const { invoices, total } = await searchInvoices(params.q, params.status, page);
 
-  const totalPages = Math.max(1, Math.ceil(total / DEFAULT_PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(total / POSTINGS_PAGE_SIZE));
   const showPagination = totalPages > 1;
 
   return (
