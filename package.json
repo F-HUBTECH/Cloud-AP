@@ -19,7 +19,8 @@
     "db:migrate": "supabase migration up",
     "test:period-closing": "node tests/period-closing.test.mjs",
     "manual:generate": "node scripts/generate-user-guide.mjs",
-    "manual:check": "node scripts/generate-user-guide.mjs --check"
+    "manual:check": "node scripts/generate-user-guide.mjs --check",
+    "test:cheque-printing": "node tests/cheque-printing.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

@@ -1,0 +1,8 @@
+.paper { position: relative; flex-shrink: 0; background: white; color: black; font-family: Tahoma, "Noto Sans Thai", Arial, sans-serif; }
+.preview { box-shadow: 0 2px 12px #0002; background-image: linear-gradient(#dbeafe66 1px, transparent 1px), linear-gradient(90deg, #dbeafe66 1px, transparent 1px); background-size: 10mm 10mm; }
+.field { position: absolute; line-height: 1.45; box-sizing: border-box; overflow-wrap: anywhere; }
+.preview .field { outline: 1px dashed #94a3b8; }
+.fieldText { display: block; }
+.crossing { border-top: 1px solid black; border-bottom: 1px solid black; text-align: center; }
+.watermark { position: absolute; top: 42%; width: 100%; text-align: center; font-size: 28pt; font-weight: bold; color: #b91c1c; transform: rotate(-15deg); opacity: .65; }
+.guide { position: absolute; left: 4mm; bottom: 4mm; color: #64748b; font-size: 9pt; }

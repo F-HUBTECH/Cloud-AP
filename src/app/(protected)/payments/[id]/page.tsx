@@ -253,7 +253,7 @@ export default function PaymentDetailPage({
             <p className="text-muted-foreground">Payment detail view</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <span
             className={cn(
               "badge",
@@ -291,6 +291,12 @@ export default function PaymentDetailPage({
               <XCircle className="h-4 w-4" />
               Cancel Payment
             </button>
+          )}
+          {payment.pay_method === "cheque" && (
+            <Link href={`/payments/${payment.id}/cheque`} className="btn-outline">
+              <Printer className="h-4 w-4" />
+              Print Cheque
+            </Link>
           )}
           <button
             type="button"

@@ -43,6 +43,7 @@ export default function AssignPaymentPage() {
     doc_date: new Date().toISOString().slice(0, 10),
     pay_method: "cheque",
     cheque_number: "",
+    cheque_date: "",
     bank_code: "",
     bank_name: "",
     remark: "",
@@ -159,7 +160,7 @@ export default function AssignPaymentPage() {
         supplier_id: vendor.id,
         pay_method: header.pay_method,
         cheque_number: header.cheque_number || undefined,
-        cheque_date: header.pay_method === "cheque" ? header.doc_date : undefined,
+        cheque_date: header.pay_method === "cheque" ? header.cheque_date || header.doc_date : undefined,
         bank_code: header.bank_code || undefined,
         bank_name: header.bank_name || undefined,
         remark: header.remark || undefined,
@@ -269,6 +270,17 @@ export default function AssignPaymentPage() {
             </div>
             {header.pay_method === "cheque" && (
               <>
+                <div className="space-y-2">
+                  <label htmlFor="cheque_date" className="label-text">Cheque Date</label>
+                  <input
+                    id="cheque_date"
+                    type="date"
+                    className="input-field"
+                    value={header.cheque_date || header.doc_date}
+                    onChange={(e) => setHeader((h) => ({ ...h, cheque_date: e.target.value }))}
+                    required
+                  />
+                </div>
                 <div className="space-y-2">
                   <label htmlFor="cheque_number" className="label-text">
                     Cheque Number
