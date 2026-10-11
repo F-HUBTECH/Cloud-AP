@@ -18,6 +18,8 @@ import {
 import Link from "next/link";
 import { AccountLookup, TemplateLookup } from "@/components/vouchers/voucher-lookups";
 import { VoucherTransferHistory } from "@/components/transfers/voucher-transfer-history";
+import { VoucherAccountReferenceDetails } from "@/components/transfers/voucher-account-reference";
+import { loadVoucherAccountReference, type VoucherAccountReference } from "@/modules/transfer/voucher-account-reference";
 import { SubmitApprovalButton } from "./submit-approval-button";
 
 interface InvoiceDetail {
@@ -107,6 +109,7 @@ export default function VoucherDetailPage({
   });
 
   const [lines, setLines] = useState<LineItem[]>([]);
+  const [accountReference, setAccountReference] = useState<VoucherAccountReference | null>(null);
 
   useEffect(() => {
     params.then((p) => setId(p.id));
@@ -115,12 +118,22 @@ export default function VoucherDetailPage({
   const fetchInvoice = useCallback(async () => {
     if (!id) return;
     const supabase = createClient();
+    setLoading(true);
+    setError(null);
+    setAccountReference(null);
 
     const { data: inv } = await supabase
       .from("invoices")
       .select("*")
       .eq("id", id)
       .single();
+
+    if (!inv) {
+      setInvoice(null);
+      setLines([]);
+      setLoading(false);
+      return;
+    }
 
     if (inv) {
       const { data: supplier } = await supabase
@@ -174,6 +187,11 @@ export default function VoucherDetailPage({
       ]);
     }
 
+    try {
+      setAccountReference(await loadVoucherAccountReference(supabase, id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not load source voucher accounting details");
+    }
     setLoading(false);
   }, [id]);
 
@@ -584,7 +602,8 @@ export default function VoucherDetailPage({
         </div>
 
         {/* Line Items */}
-        <div className="card">
+        {accountReference && <VoucherAccountReferenceDetails reference={accountReference} />}
+        {!accountReference && <div className="card">
           <div className="flex items-center justify-between border-b px-6 py-4">
             <h2 className="font-semibold">Detail Lines</h2>
             {isEditing && (
@@ -677,7 +696,7 @@ export default function VoucherDetailPage({
               {formatCurrency(Math.abs(totalDr - totalCr))}
             </div>
           )}
-        </div>
+        </div>}
 
         {/* Edit actions */}
         {isEditing && (
