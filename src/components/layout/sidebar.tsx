@@ -65,7 +65,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
     approverOnly: true,
   },
   {
-    label: "Transfers",
+    label: "Transfer AP Vouchers",
     href: "/transfers",
     icon: ArrowRightLeft,
     financeOnly: true,

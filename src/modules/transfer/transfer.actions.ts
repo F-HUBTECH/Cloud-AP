@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { transferService } from "./transfer.service";
 import { transferCreateSchema } from "./transfer.schema";
 import { AppError } from "@/lib/errors";
@@ -35,6 +36,7 @@ export async function createTransfer(formData: unknown) {
   try {
     const validated = transferCreateSchema.parse(formData);
     const result = await transferService.create(validated);
+    refreshTransferPages();
     return { success: true as const, data: result };
   } catch (error) {
     if (error instanceof AppError) return { success: false as const, error: error.message };
@@ -48,6 +50,7 @@ export async function createTransfer(formData: unknown) {
 export async function cancelTransfer(id: string) {
   try {
     const result = await transferService.cancel(id);
+    refreshTransferPages();
     return { success: true as const, data: result };
   } catch (error) {
     if (error instanceof AppError) return { success: false as const, error: error.message };
@@ -62,5 +65,10 @@ export async function deleteTransfer(id: string) {
   } catch (error) {
     if (error instanceof AppError) return { success: false as const, error: error.message };
     return { success: false as const, error: "Failed to delete transfer" };
+  }
+}
+function refreshTransferPages() {
+  for (const path of ["/transfers", "/postings", "/vendors", "/payments", "/dashboard", "/reports"]) {
+    revalidatePath(path, "layout");
   }
 }

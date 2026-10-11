@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { getDashboardDate } from "@/lib/dashboard/metrics";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { createTransfer, cancelTransfer } from "@/modules/transfer/transfer.actions";
@@ -17,6 +19,10 @@ import {
 
 interface Transfer {
   id: string;
+  source_invoice_id: string | null;
+  destination_invoice_id: string | null;
+  source_invoice?: { doc_number: string };
+  destination_invoice?: { doc_number: string };
   doc_number: string;
   transfer_date: string;
   from_vendor_code: string;
@@ -34,6 +40,22 @@ interface VendorOption {
   code: string;
   name_en: string;
   name_th: string | null;
+}
+
+interface VoucherOption {
+  id: string;
+  doc_number: string;
+  inv_number: string | null;
+  doc_date: string;
+  due_date: string | null;
+  balance: number;
+  total_amount: number;
+  currency: string;
+  ap_type_code: string | null;
+  paid_amount: number | null;
+  deposit_amount: number | null;
+  payment_invoices: { payments: { status: string } | null }[];
+  deposit_applications: { status: string }[];
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -54,22 +76,26 @@ export default function TransferListPage() {
   const [cancelId, setCancelId] = useState<string | null>(null);
   const [cancelLoading, setCancelLoading] = useState(false);
   const [vendors, setVendors] = useState<VendorOption[]>([]);
+  const [vouchers, setVouchers] = useState<VoucherOption[]>([]);
+  const [voucherLoading, setVoucherLoading] = useState(false);
+  const [voucherError, setVoucherError] = useState<string | null>(null);
   const [form, setForm] = useState({
-    doc_date: new Date().toISOString().slice(0, 10),
+    doc_date: getDashboardDate(),
     from_vendor_id: "",
     to_vendor_id: "",
-    amount: "",
+    source_invoice_id: "",
     remark: "",
   });
 
   const supabase = useMemo(() => createClient(), []);
   const pageSize = 20;
+  const selectedVoucher = vouchers.find((voucher) => voucher.id === form.source_invoice_id);
 
   const fetchTransfers = useCallback(async () => {
     setLoading(true);
     let query = supabase
       .from("transfers")
-      .select("*, from_vendor:vendors!transfers_from_vendor_id_fkey(code, name_en, name_th), to_vendor:vendors!transfers_to_vendor_id_fkey(code, name_en, name_th)", { count: "exact" })
+      .select("*, from_vendor:vendors!transfers_from_vendor_id_fkey(code, name_en, name_th), to_vendor:vendors!transfers_to_vendor_id_fkey(code, name_en, name_th), source_invoice:invoices!transfers_source_invoice_id_fkey(doc_number), destination_invoice:invoices!transfers_destination_invoice_id_fkey(doc_number)", { count: "exact" })
       .order("transfer_date", { ascending: false })
       .range((page - 1) * pageSize, page * pageSize - 1);
 
@@ -107,20 +133,48 @@ export default function TransferListPage() {
     fetchVendors();
   }, [fetchVendors]);
 
+  useEffect(() => {
+    let cancelled = false;
+    setVouchers([]);
+    setVoucherError(null);
+    if (!form.from_vendor_id || !dialogOpen) { setVoucherLoading(false); return; }
+    setVoucherLoading(true);
+    async function loadVouchers() {
+      try {
+        const { data, error: loadError } = await supabase.from("invoices")
+          .select("id, doc_number, inv_number, doc_date, due_date, balance, total_amount, currency, ap_type_code, paid_amount, deposit_amount, payment_invoices(payments(status)), deposit_applications(status)")
+          .eq("supplier_id", form.from_vendor_id).in("status", ["approved", "posted"])
+          .gt("balance", 0).order("doc_date", { ascending: false });
+        if (cancelled) return;
+        if (loadError) { setVoucherError(loadError.message); return; }
+        setVouchers(((data ?? []) as unknown as VoucherOption[]).filter((voucher) =>
+          Number(voucher.balance) === Number(voucher.total_amount) &&
+          Number(voucher.paid_amount ?? 0) === 0 && Number(voucher.deposit_amount ?? 0) === 0 &&
+          !["ADN", "ACN", "DR", "B"].includes((voucher.ap_type_code ?? "").toUpperCase()) &&
+          !(!voucher.ap_type_code && /^(ADN|ACN)/i.test(voucher.doc_number)) &&
+          !voucher.payment_invoices.some((allocation) => allocation.payments && !["cancelled", "voided", "rejected"].includes(allocation.payments.status)) &&
+          !voucher.deposit_applications.some((application) => application.status === "active")
+        ));
+      } catch { if (!cancelled) setVoucherError("Could not load AP vouchers. Please reopen this form to retry."); }
+      finally { if (!cancelled) setVoucherLoading(false); }
+    }
+    loadVouchers();
+    return () => { cancelled = true; };
+  }, [form.from_vendor_id, dialogOpen, supabase]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setSaving(true);
 
     try {
-      const amount = parseFloat(form.amount) || 0;
+      if (!selectedVoucher) { setError("Select a source AP voucher"); return; }
 
       const formData = {
         doc_date: form.doc_date,
-        from_vendor_id: form.from_vendor_id,
+        source_invoice_id: selectedVoucher.id,
         to_vendor_id: form.to_vendor_id,
-        amount,
-        ...(form.remark ? { remark: form.remark } : {}),
+        remark: form.remark,
       };
 
       const result = await createTransfer(formData);
@@ -131,10 +185,10 @@ export default function TransferListPage() {
 
       setDialogOpen(false);
       setForm({
-        doc_date: new Date().toISOString().slice(0, 10),
+        doc_date: getDashboardDate(),
         from_vendor_id: "",
         to_vendor_id: "",
-        amount: "",
+        source_invoice_id: "",
         remark: "",
       });
       await fetchTransfers();
@@ -169,14 +223,14 @@ export default function TransferListPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Vendor Transfers</h1>
-          <p className="text-muted-foreground">Transfer AP balance between vendors</p>
+          <h1 className="text-2xl font-bold tracking-tight">Transfer AP Vouchers</h1>
+          <p className="text-muted-foreground">Transfer a full unpaid AP voucher to another vendor</p>
         </div>
         <button onClick={() => setDialogOpen(true)} className="btn-primary">
           <Plus className="h-4 w-4" />
-          New Transfer
+          Transfer Voucher
         </button>
       </div>
 
@@ -214,6 +268,8 @@ export default function TransferListPage() {
             <tr>
               <th>Doc No.</th>
               <th className="date-column">Date</th>
+              <th>Source Voucher</th>
+              <th>Destination Voucher</th>
               <th>From Vendor</th>
               <th>To Vendor</th>
               <th className="text-right">Amount</th>
@@ -225,13 +281,13 @@ export default function TransferListPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={8} className="py-12 text-center text-muted-foreground">
+                <td colSpan={10} className="py-12 text-center text-muted-foreground">
                   <Loader2 className="mx-auto h-6 w-6 animate-spin" />
                 </td>
               </tr>
             ) : transfers.length === 0 ? (
               <tr>
-                <td colSpan={8} className="py-12 text-center text-muted-foreground">
+                <td colSpan={10} className="py-12 text-center text-muted-foreground">
                   No transfers found
                 </td>
               </tr>
@@ -240,6 +296,8 @@ export default function TransferListPage() {
                 <tr key={t.id}>
                   <td className="font-medium">{t.doc_number}</td>
                   <td className="date-column">{formatDate(t.transfer_date)}</td>
+                  <td>{t.source_invoice_id ? <Link className="text-primary hover:underline" href={`/postings/${t.source_invoice_id}`}>{t.source_invoice?.doc_number ?? "View source"}</Link> : <span className="text-muted-foreground">Legacy balance transfer</span>}</td>
+                  <td>{t.destination_invoice_id ? <Link className="text-primary hover:underline" href={`/postings/${t.destination_invoice_id}`}>{t.destination_invoice?.doc_number ?? "View destination"}</Link> : "—"}</td>
                   <td>
                     {t.from_vendor
                       ? `${t.from_vendor.code} - ${t.from_vendor.name_th || t.from_vendor.name_en}`
@@ -263,7 +321,7 @@ export default function TransferListPage() {
                   </td>
                   <td className="max-w-[200px] truncate">{t.remark ?? "-"}</td>
                   <td className="text-right">
-                    {t.status === "active" && (
+                    {t.status === "active" && t.source_invoice_id && (
                       <button
                         onClick={() => setCancelId(t.id)}
                         className="btn-ghost gap-1 text-sm text-destructive"
@@ -303,11 +361,11 @@ export default function TransferListPage() {
         </div>
       )}
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+      <Dialog open={dialogOpen} onOpenChange={(open) => { if (!saving) setDialogOpen(open); }}>
+        <DialogContent className="max-h-[90dvh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>New Vendor Transfer</DialogTitle>
-            <DialogDescription>Transfer AP balance from one vendor to another</DialogDescription>
+            <DialogTitle>Transfer AP Voucher</DialogTitle>
+            <DialogDescription>Select an unpaid voucher. Its full outstanding balance will be transferred, with linked source and destination records.</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
@@ -326,17 +384,13 @@ export default function TransferListPage() {
                 />
               </div>
               <div className="space-y-2">
-                <label htmlFor="amount" className="label-text">Amount *</label>
+                <label htmlFor="amount" className="label-text">Full outstanding balance {selectedVoucher?.currency}</label>
                 <input
                   id="amount"
-                  type="number"
-                  step="0.01"
-                  min="0.01"
-                  value={form.amount}
-                  onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
-                  className="input-field text-right"
-                  placeholder="0.00"
-                  required
+                  type="text"
+                  value={selectedVoucher ? formatNumber(Number(selectedVoucher.balance)) : "—"}
+                  readOnly
+                  className="input-field bg-muted text-right tabular-nums"
                 />
               </div>
             </div>
@@ -345,7 +399,7 @@ export default function TransferListPage() {
               <select
                 id="from_vendor_id"
                 value={form.from_vendor_id}
-                onChange={(e) => setForm((f) => ({ ...f, from_vendor_id: e.target.value }))}
+                onChange={(e) => setForm((f) => ({ ...f, from_vendor_id: e.target.value, source_invoice_id: "", to_vendor_id: "" }))}
                 className="input-field"
                 required
               >
@@ -358,6 +412,18 @@ export default function TransferListPage() {
               </select>
             </div>
             <div className="space-y-2">
+              <label htmlFor="source_invoice_id" className="label-text">Source AP Voucher *</label>
+              <select id="source_invoice_id" value={form.source_invoice_id}
+                onChange={(e) => setForm((f) => ({ ...f, source_invoice_id: e.target.value }))}
+                className="input-field" required disabled={!form.from_vendor_id || voucherLoading}>
+                <option value="">{voucherLoading ? "Loading vouchers…" : "Select an AP voucher…"}</option>
+                {vouchers.map((voucher) => <option key={voucher.id} value={voucher.id}>{voucher.doc_number} · {formatDate(voucher.doc_date)} · {formatNumber(Number(voucher.balance))} {voucher.currency}</option>)}
+              </select>
+              {voucherError && <p role="alert" className="text-sm text-destructive">{voucherError}</p>}
+              {form.from_vendor_id && !voucherLoading && !voucherError && vouchers.length === 0 && <p className="text-sm text-muted-foreground">No eligible unpaid vouchers for this vendor.</p>}
+              {selectedVoucher && <p className="text-xs text-muted-foreground">Invoice: {selectedVoucher.inv_number || "—"} · Due: {selectedVoucher.due_date ? formatDate(selectedVoucher.due_date) : "—"} · <Link className="text-primary hover:underline" href={`/postings/${selectedVoucher.id}`}>View voucher</Link></p>}
+            </div>
+            <div className="space-y-2">
               <label htmlFor="to_vendor_id" className="label-text">To Vendor (Destination) *</label>
               <select
                 id="to_vendor_id"
@@ -367,7 +433,7 @@ export default function TransferListPage() {
                 required
               >
                 <option value="">Select destination vendor...</option>
-                {vendors.map((v) => (
+                {vendors.filter((v) => v.id !== form.from_vendor_id).map((v) => (
                   <option key={v.id} value={v.id}>
                     {v.code} - {v.name_th || v.name_en}
                   </option>
@@ -375,13 +441,14 @@ export default function TransferListPage() {
               </select>
             </div>
             <div className="space-y-2">
-              <label htmlFor="remark" className="label-text">Remark</label>
+              <label htmlFor="remark" className="label-text">Transfer reason *</label>
               <textarea
                 id="remark"
                 value={form.remark}
                 onChange={(e) => setForm((f) => ({ ...f, remark: e.target.value }))}
                 className="input-field min-h-[80px]"
                 rows={2}
+                required
                 maxLength={500}
               />
             </div>
@@ -389,7 +456,7 @@ export default function TransferListPage() {
               <button type="button" onClick={() => setDialogOpen(false)} className="btn-outline">
                 Cancel
               </button>
-              <button type="submit" className="btn-primary" disabled={saving}>
+              <button type="submit" className="btn-primary" disabled={saving || voucherLoading || !selectedVoucher || !form.to_vendor_id || !form.remark.trim()}>
                 {saving && <Loader2 className="h-4 w-4 animate-spin" />}
                 <ArrowRightLeft className="h-4 w-4" />
                 Transfer
@@ -404,7 +471,7 @@ export default function TransferListPage() {
           <DialogHeader>
             <DialogTitle>Cancel Transfer</DialogTitle>
             <DialogDescription>
-              Are you sure you want to cancel this transfer? The vendor balances will be reversed.
+              Are you sure you want to cancel this transfer? The destination and adjustment vouchers will be cancelled, and the source balance restored. Cancellation is blocked if the destination is already used or the transfer period is closed.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

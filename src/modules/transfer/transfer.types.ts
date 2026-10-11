@@ -1,5 +1,8 @@
 export interface Transfer {
   id: string;
+  source_invoice_id: string | null;
+  destination_invoice_id: string | null;
+  adjustment_invoice_id: string | null;
   doc_number: string;
   transfer_date: string;
   from_vendor_code: string;
@@ -24,10 +27,9 @@ export interface TransferWithVendors extends Transfer {
 
 export interface TransferFormData {
   doc_date: string;
-  from_vendor_id: string;
+  source_invoice_id: string;
   to_vendor_id: string;
-  amount: number;
-  remark?: string;
+  remark: string;
 }
 
 export interface TransferListParams {

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { AccountLookup, TemplateLookup } from "@/components/vouchers/voucher-lookups";
+import { VoucherTransferHistory } from "@/components/transfers/voucher-transfer-history";
 import { SubmitApprovalButton } from "./submit-approval-button";
 
 interface InvoiceDetail {
@@ -390,7 +391,7 @@ export default function VoucherDetailPage({
           {invoice.status === "draft" && !isEditing && (
             <SubmitApprovalButton invoiceId={invoice.id} onSubmitted={fetchInvoice} />
           )}
-          {invoice.status === "approved" && !isEditing && (
+          {["approved", "posted"].includes(invoice.status) && invoice.balance > 0 && !isEditing && (
             <Link href={`/payments/assign/${invoice.supplier_id}`} className="btn-primary">
               Create Payment
             </Link>
@@ -434,6 +435,8 @@ export default function VoucherDetailPage({
           )}
         </div>
       </div>
+
+      <VoucherTransferHistory invoiceId={invoice.id} />
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
