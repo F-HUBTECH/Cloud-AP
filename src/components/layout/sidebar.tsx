@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Link from "next/link";
+import { NavigationLink as Link } from "@/components/ui/navigation-link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
 import { usePermission } from "@/hooks/use-permission";

@@ -9,7 +9,7 @@ import {
   ChevronRight,
   Building2,
 } from "lucide-react";
-import Link from "next/link";
+import { NavigationLink as Link } from "@/components/ui/navigation-link";
 
 export const revalidate = 30;
 

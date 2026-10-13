@@ -12,5 +12,6 @@
 .content table { width: 100%; border-collapse: collapse; font-size: .9rem; }
 .content th, .content td { border: 1px solid hsl(var(--border)); padding: .65rem; text-align: left; vertical-align: top; min-width: 130px; }
 .content th { background: hsl(var(--muted)); font-weight: 600; }
+.content img { display: block; max-width: 100%; height: auto; margin: 1rem 0; border: 1px solid hsl(var(--border)); border-radius: .5rem; }
 .content blockquote { margin: 1rem 0; border-left: 3px solid hsl(var(--primary)); background: hsl(var(--muted)); padding: .5rem 1rem; }
 @media print { .content { border: none; box-shadow: none; } }

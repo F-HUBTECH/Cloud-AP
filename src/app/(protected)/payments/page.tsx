@@ -2,7 +2,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
 import { Plus, Search, Filter } from "lucide-react";
-import Link from "next/link";
+import { NavigationLink as Link } from "@/components/ui/navigation-link";
 
 export const revalidate = 30;
 
@@ -29,7 +29,7 @@ async function searchPayments(
   let query = supabase
     .from("payments")
     .select(
-      "id, doc_number, doc_date, supplier_code, supplier_id, pay_method, cheque_number, total_amount, total_net, status"
+      "id, doc_number, doc_date, supplier_code, supplier_id, pay_method, cheque_number, total_amount, total_net, status, supplier:vendors!payments_supplier_id_fkey(name_en, name_th)"
     )
     .order("doc_date", { ascending: false })
     .limit(100);
@@ -47,26 +47,15 @@ async function searchPayments(
   const { data } = await query;
   if (!data) return [];
 
-  const supplierIds = [...new Set(data.map((payment) => payment.supplier_id))];
-  const { data: suppliers } = supplierIds.length
-    ? await supabase
-        .from("vendors")
-        .select("id, name_en, name_th")
-        .in("id", supplierIds)
-    : { data: [] };
-  const supplierNames = new Map(
-    (suppliers ?? []).map((supplier) => [
-      supplier.id,
-      supplier.name_th || supplier.name_en,
-    ])
-  );
-
-  return data.map((p) => ({
-    ...p,
-    supplier_name: supplierNames.get(p.supplier_id) ?? null,
-    total_amount: Number(p.total_amount) || 0,
-    total_net: Number(p.total_net) || 0,
-  }));
+  return data.map(({ supplier, ...p }) => {
+    const vendor = Array.isArray(supplier) ? supplier[0] : supplier;
+    return {
+      ...p,
+      supplier_name: vendor?.name_th || vendor?.name_en || null,
+      total_amount: Number(p.total_amount) || 0,
+      total_net: Number(p.total_net) || 0,
+    };
+  });
 }
 
 const statusColorMap: Record<string, string> = {

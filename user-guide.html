@@ -23,6 +23,7 @@
     a { color: #1d4ed8; }
     li { margin: 6px 0; }
     code { background: #eef3f8; padding: 2px 5px; border-radius: 4px; font-size: .9em; }
+    main img { display: block; max-width: 100%; height: auto; margin: 1rem 0; border: 1px solid #dbe3ed; border-radius: 8px; }
     .manual-table { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: .9rem; }
     th, td { border: 1px solid #dbe3ed; padding: 10px; text-align: left; vertical-align: top; min-width: 130px; }
@@ -52,7 +53,7 @@
 <li><a href="#manual-section-15">15. สถานะและแนวทางแก้ปัญหา</a></li>
 <li><a href="#manual-section-16">16. แนวปฏิบัติที่แนะนำ</a></li></ul></nav>
       <main><p>ลิงก์ไปหน้าทำรายการใช้ได้เมื่อเปิดคู่มือบนเว็บไซต์ระบบ หากอ่านไฟล์ออฟไลน์ ให้เข้าสู่ระบบแล้วเปิดเมนูตามหัวข้อ</p><p>เอกสารนี้อธิบายการใช้งานระบบ KSAP สำหรับพนักงานบัญชี ผู้อนุมัติ และผู้ดูแลระบบ</p>
-<p>ปรับปรุงล่าสุด: <strong>11 ตุลาคม 2026</strong> — รอบบัญชีปัจจุบัน, Voucher Templates, การโอน AP Voucher และการพิมพ์เช็ค</p>
+<p>ปรับปรุงล่าสุด: <strong>11 ตุลาคม 2026</strong> — คำอธิบาย Dashboard พร้อมภาพประกอบ, รอบบัญชีปัจจุบัน, Voucher Templates, การโอน AP Voucher และการพิมพ์เช็ค</p>
 <p>เปิดคู่มือจากเมนู <strong>Manual</strong> ได้หลังเข้าสู่ระบบทุก Role ใช้สารบัญเพื่อข้ามไปยังหัวข้อที่ต้องการ เมนูทำรายการอื่นขึ้นอยู่กับสิทธิ์ของผู้ใช้</p>
 <h2 id="manual-section-1">1. ภาพรวมระบบ</h2>
 <p>ลำดับงานหลักของระบบคือ</p>
@@ -66,6 +67,49 @@
 <li>ตรวจสอบรายงานและรายงานภาษีหัก ณ ที่จ่าย</li>
 </ol>
 <p>ระบบใช้สกุลเงิน THB เป็นค่าเริ่มต้น และคำนวณ VAT/WHT ตามค่าที่ตั้งไว้ในข้อมูลผู้ขายหรือรหัสภาษี</p>
+<h3>Dashboard — อ่านภาพรวมเจ้าหนี้</h3>
+<p>เปิดเมนู <a href="/dashboard">Dashboard</a> จะพบหัวข้อ <strong>Accounts payable overview</strong> ใช้ตรวจยอดและเลือกงานที่ควรทำก่อน ภาพด้านล่างจับจากหน้าจอ Dashboard ปัจจุบันโดยใช้ <strong>ข้อมูลจำลอง ณ 11 ตุลาคม 2026</strong> ตัวเลขในภาพเป็นตัวอย่างประกอบการอ่านหน้าจอ</p>
+<p><a href="public/manual-assets/dashboard-overview.png"><img src="public/manual-assets/dashboard-overview.png" alt="Dashboard ส่วนหัวและการ์ดสรุปยอด แสดงข้อมูลจำลองเดือนตุลาคม 2026"></a></p>
+<p><em>ภาพที่ 1: ส่วนหัวและการ์ดสรุปยอด — คลิกภาพเพื่อขยาย</em></p>
+<div class="manual-table"><table>
+<thead>
+<tr>
+<th>ส่วนบนหน้าจอ</th>
+<th>ความหมายและการใช้งาน</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>October 2026</strong> / เดือนมุมขวาบน</td>
+<td>เดือนปฏิทินปัจจุบันตามเวลา Bangkok ใช้ประกอบยอด Paid this month ตรวจงวดบัญชีที่ใช้ปิดงวดได้ที่ Settings &gt; Current Accounting Period</td>
+</tr>
+<tr>
+<td><strong>New voucher</strong></td>
+<td>เปิดหน้าสร้าง AP Voucher ใหม่</td>
+</tr>
+<tr>
+<td><strong>Total outstanding</strong></td>
+<td>รวมยอดคงค้างที่มากกว่าศูนย์ของ Voucher สถานะ <code>approved</code> และ <code>posted</code> คลิกเพื่อเปิดรายการ AP Vouchers</td>
+</tr>
+<tr>
+<td><strong>Paid this month</strong></td>
+<td>รวม <strong>Total Amount</strong> ของ Payment สถานะ <code>paid</code> ที่ <strong>Document Date</strong> อยู่ในเดือนปัจจุบัน พร้อมจำนวนรายการที่จ่ายแล้ว คลิกเพื่อเปิด Payments หากต้องการยอดสุทธิสำหรับเช็ค ให้ดู Net Amount ในรายละเอียด Payment</td>
+</tr>
+<tr>
+<td><strong>Overdue balance</strong></td>
+<td>ยอดคงค้างของ Voucher ที่อนุมัติ/ลงบัญชีแล้วและ Due Date ก่อนวันที่แสดงด้านล่าง พร้อมสัดส่วนต่อยอดค้างทั้งหมด คลิกเพื่อเปิด AP Aging</td>
+</tr>
+<tr>
+<td><strong>Pending approval</strong></td>
+<td>จำนวน Voucher สถานะ <code>pending_approval</code> คลิกเพื่อเปิดรายการ AP Vouchers ที่กรองสถานะนี้</td>
+</tr>
+</tbody></table></div>
+<p>ตัวอย่างภาพที่ 1: ยอดค้างทั้งหมด <strong>245,000.00 บาท</strong> เกินกำหนด <strong>73,500.00 บาท (30%)</strong> และมีเอกสารรออนุมัติ <strong>6 รายการ</strong> เริ่มตรวจรายการเกินกำหนดจาก Overdue balance และตรวจเอกสารที่รอจาก Pending approval</p>
+<p><a href="public/manual-assets/dashboard-analysis.png"><img src="public/manual-assets/dashboard-analysis.png" alt="Dashboard ส่วนสัดส่วนเจ้าหนี้ สถานะใบสำคัญ และงานที่ควรจัดการ แสดงข้อมูลจำลอง"></a></p>
+<p><em>ภาพที่ 2: สัดส่วนหนี้ ขั้นตอนใบสำคัญ และงานที่ควรทำ — คลิกภาพเพื่อขยาย</em></p>
+<p><strong>Payables composition</strong> แบ่งยอดค้างเป็นสามกลุ่ม: สีเขียว <strong>Current / not yet due</strong> คือยังไม่เลยกำหนด, สีชมพู <strong>Past due</strong> คือเลยกำหนดแล้ว และสีเทา <strong>No due date</strong> คือยังไม่มีวันครบกำหนด ตัวเลขกลางวงกลมเป็นเปอร์เซ็นต์ยอดเกินกำหนด กด <strong>View aging report</strong> เพื่อดูรายละเอียดตามผู้ขายและอายุหนี้</p>
+<p><strong>Invoice workflow</strong> แสดงจำนวนเอกสารในขั้น <strong>Draft</strong>, <strong>Pending approval</strong> และ <strong>Approved / posted</strong> คลิกแต่ละแถวเพื่อเปิดรายการที่เกี่ยวข้อง แถว Approved / posted เปิดรายการ AP Vouchers ทั้งหมด จำนวนในแผงนี้นับเอกสารรวมทั้งเอกสารที่ยอดคงเหลือเป็นศูนย์ จึงใช้ติดตามสถานะงาน ส่วนยอดเงินค้างดูจาก Total outstanding ผู้มีสิทธิ์อนุมัติใช้เมนู Approvals เพื่อดำเนินการอนุมัติ</p>
+<p><strong>Your next priorities</strong> เป็นทางลัดไป <strong>Review aging</strong>, <strong>View pending invoices</strong> และ <strong>Manage vendors</strong> โดยแสดงจำนวนผู้ขาย Active เทียบกับทั้งหมด ข้อความเปลี่ยนตามยอดเกินกำหนดและจำนวนเอกสารที่รออนุมัติ</p>
+<p>ตรวจวันที่ <strong>As of … · Bangkok time</strong> ด้านล่างทุกครั้งก่อนนำยอดไปใช้งาน หากพบแถบแจ้ง <strong>Some financial data could not be loaded</strong> ข้อมูลอาจไม่ครบ ให้โหลดหน้าใหม่และตรวจรายงานที่เกี่ยวข้องก่อนอ้างอิงยอด</p>
 <h2 id="manual-section-2">2. การเข้าสู่ระบบ</h2>
 <ol>
 <li>เปิด URL ของระบบ</li>
@@ -114,7 +158,7 @@
 </thead>
 <tbody><tr>
 <td>Dashboard</td>
-<td>ดูภาพรวมจำนวนเอกสาร ยอดค้างจ่าย และกิจกรรมล่าสุด</td>
+<td>ดูยอดค้างจ่าย ยอดจ่ายเดือนนี้ สัดส่วนหนี้ และงานที่ควรจัดการ</td>
 </tr>
 <tr>
 <td>Vendors</td>

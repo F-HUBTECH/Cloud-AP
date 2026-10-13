@@ -31,6 +31,7 @@ const document = `<!doctype html>
     a { color: #1d4ed8; }
     li { margin: 6px 0; }
     code { background: #eef3f8; padding: 2px 5px; border-radius: 4px; font-size: .9em; }
+    main img { display: block; max-width: 100%; height: auto; margin: 1rem 0; border: 1px solid #dbe3ed; border-radius: 8px; }
     .manual-table { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: .9rem; }
     th, td { border: 1px solid #dbe3ed; padding: 10px; text-align: left; vertical-align: top; min-width: 130px; }

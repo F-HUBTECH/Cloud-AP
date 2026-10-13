@@ -15,6 +15,8 @@ npm run manual:check     # ตรวจว่า HTML ตรงกับ Markdow
 
 หน้า Manual แสดงสารบัญอัตโนมัติจากหัวข้อระดับ `##` รองรับตารางและลิงก์ภายในระบบ ใช้เฉพาะ Markdown ที่ผู้พัฒนาตรวจสอบแล้ว ห้ามนำเนื้อหาจากผู้ใช้มา render ด้วยตัวช่วยนี้โดยตรง หน้าในแอปอัปเดตเมื่อ build/deploy โค้ดใหม่
 
+ภาพหน้าจอคู่มืออยู่ใน `public/manual-assets/` ใช้ลิงก์ Markdown รูปแบบ `public/manual-assets/dashboard-overview.png` หน้า `/manual` จะแปลงเป็น URL `/manual-assets/...` ส่วนไฟล์ HTML เปิดรูปจากโฟลเดอร์ข้างเคียงได้ หากแชร์ HTML ออฟไลน์ ให้แนบโฟลเดอร์ `public/manual-assets/` ไปด้วย ภาพ Dashboard ใช้ component จริงกับข้อมูลจำลองที่ระบุในคำบรรยาย
+
 ## โครงสร้างโปรเจกต์
 
 ```

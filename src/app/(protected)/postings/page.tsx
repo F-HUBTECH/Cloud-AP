@@ -2,7 +2,9 @@ import { createServerClient } from "@/lib/supabase/server";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
 import { Plus, Search, FileText, ChevronLeft, ChevronRight } from "lucide-react";
-import Link from "next/link";
+import { NavigationLink as Link } from "@/components/ui/navigation-link";
+import { Suspense } from "react";
+import { PageLoading } from "@/components/layout/page-loading";
 
 export const revalidate = 30;
 const POSTINGS_PAGE_SIZE = 12;
@@ -35,7 +37,7 @@ async function searchInvoices(
   let query = supabase
     .from("invoices")
     .select(
-      "id, doc_number, doc_date, supplier_code, supplier_id, inv_number, total_amount, balance, status",
+      "id, doc_number, doc_date, supplier_code, supplier_id, inv_number, total_amount, balance, status, supplier:vendors!invoices_supplier_id_fkey(name_en, name_th)",
       { count: "exact" }
     )
     .order("doc_date", { ascending: false })
@@ -53,26 +55,15 @@ async function searchInvoices(
 
   const { data, count } = await query;
 
-  const supplierIds = [...new Set((data ?? []).map((inv) => inv.supplier_id))];
-  const { data: suppliers } = supplierIds.length
-    ? await supabase
-        .from("vendors")
-        .select("id, name_en, name_th")
-        .in("id", supplierIds)
-    : { data: [] };
-  const supplierNames = new Map(
-    (suppliers ?? []).map((supplier) => [
-      supplier.id,
-      supplier.name_th || supplier.name_en,
-    ])
-  );
-
-  const invoices = (data ?? []).map((inv) => ({
-    ...inv,
-    supplier_name: supplierNames.get(inv.supplier_id) ?? null,
-    total_amount: Number(inv.total_amount) || 0,
-    balance: Number(inv.balance) || 0,
-  }));
+  const invoices = (data ?? []).map(({ supplier, ...inv }) => {
+    const vendor = Array.isArray(supplier) ? supplier[0] : supplier;
+    return {
+      ...inv,
+      supplier_name: vendor?.name_th || vendor?.name_en || null,
+      total_amount: Number(inv.total_amount) || 0,
+      balance: Number(inv.balance) || 0,
+    };
+  });
 
   return { invoices, total: count ?? 0 };
 }
@@ -102,6 +93,14 @@ export default async function PostingsPage({
   searchParams,
 }: PostingsPageProps) {
   const params = await searchParams;
+  return (
+    <Suspense key={JSON.stringify([params.q, params.status, params.page])} fallback={<PageLoading title="AP Vouchers" />}>
+      <PostingsContent params={params} />
+    </Suspense>
+  );
+}
+
+async function PostingsContent({ params }: { params: Awaited<PostingsPageProps["searchParams"]> }) {
   const page = Math.max(1, Number(params.page) || 1);
   const { invoices, total } = await searchInvoices(params.q, params.status, page);
 

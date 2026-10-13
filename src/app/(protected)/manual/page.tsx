@@ -7,7 +7,11 @@ export const metadata = { title: "Manual | KSAP" };
 
 export default async function ManualPage() {
   const markdown = await readFile(join(process.cwd(), "USER_GUIDE.md"), "utf8");
-  const { html, sections } = renderManual(markdown);
+  const { html: sourceHtml, sections } = renderManual(markdown);
+  // Markdown uses repository-relative paths for offline HTML and Git viewers.
+  const html = sourceHtml
+    .replaceAll('src="public/manual-assets/', 'src="/manual-assets/')
+    .replaceAll('href="public/manual-assets/', 'href="/manual-assets/');
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
